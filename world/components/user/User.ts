@@ -31,4 +31,10 @@ export default class User extends UserModel implements UserData {
         targetPos.fromArray(mvArr);
         this.alpha = 0;
     }
+
+    public update(delta: number) {
+        if (this.alpha == 1) return;
+        this.alpha = this.alpha > 1 ? 1 : this.alpha + delta * 10;
+        this.position.lerpVectors(this.prevPos, this.targetPos, this.alpha);
+    }
 }
