@@ -1,5 +1,6 @@
 import { Vector3 } from "three";
 import UserModel from "./model";
+import Peer from "../../../connection/Peer";
 
 export interface UserData {
     userId: string;
@@ -13,6 +14,7 @@ export default class User extends UserModel implements UserData {
 
     userId: string;
     name: string;
+    conn: Peer;
 
     constructor(id: string, name: string) {
         super(name);
@@ -22,6 +24,7 @@ export default class User extends UserModel implements UserData {
 
         this.userId = id;
         this.name = name;
+        this.conn = new Peer();
     }
 
     public updateMovement(buffer: ArrayBuffer) {
