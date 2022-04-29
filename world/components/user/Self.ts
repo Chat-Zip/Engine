@@ -1,4 +1,5 @@
 import { UserData } from "./User";
+import { PerspectiveCamera } from "three";
 
 export interface SelfState {
     pos: Array<number>;
@@ -20,12 +21,14 @@ export interface SelfInterface {
     data: UserData;
     state: SelfState;
     collision: CollisionRange;
+    camera: PerspectiveCamera;
 }
 
 export default class Self implements SelfInterface {
     data: UserData;
     state: SelfState;
     collision: CollisionRange;
+    camera: PerspectiveCamera;
 
     constructor(id: string, name: string) {
         this.data = {
@@ -46,5 +49,6 @@ export default class Self implements SelfInterface {
             height: 14,
             depth: 4,
         };
+        this.camera = new PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 256);
     }
 }
