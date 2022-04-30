@@ -25,9 +25,10 @@ export default class User extends UserModel implements UserData {
         this.userId = id;
         this.name = name;
         this.conn = new Peer();
+        this.conn.movement.onmessage = e => this.updateMovement(e.data);
     }
 
-    public updateMovement(buffer: ArrayBuffer) {
+    private updateMovement(buffer: ArrayBuffer) {
         const { prevPos, targetPos } = this;
         const mvArr = new Float32Array(buffer);
         prevPos.copy(targetPos);
