@@ -11,6 +11,7 @@ const _unlockEvent = { type: 'unlock' };
 const _PI_2 = Math.PI / 2;
 
 export default class PointerLockControls extends EventDispatcher {
+    private keys: Map<string, boolean>;
     camera: Camera;
     displacement: Vector3;
     domElement: HTMLCanvasElement;
@@ -19,6 +20,17 @@ export default class PointerLockControls extends EventDispatcher {
 
     constructor(self: Self, domElement: HTMLCanvasElement) {
         super();
+        this.keys = new Map([
+            ['KeyW', false],
+            ['ArrowUp', false],
+            ['KeyA', false],
+            ['ArrowLeft', false],
+            ['KeyS', false],
+            ['ArrowDown', false],
+            ['KeyD', false],
+            ['ArrowRight', false],
+            ['Space', false],
+        ]);
 
         this.camera = self.camera;
         this.displacement = new Vector3().fromArray(self.state.pos);
@@ -29,12 +41,29 @@ export default class PointerLockControls extends EventDispatcher {
         this.pointerSpeed = 1.0;
     }
 
-    private onMouseMove(event: MouseEvent) {
+    private onKeyDown(e: KeyboardEvent) {
+        switch (e.code) {
+            default:
+                const {keys} = this;
+                if (!keys.has(e.code)) return;
+                if (keys.get(e.code)) return;
+                keys.set(e.code, true);
+        }
+    }
+
+    private onKeyUp(e: KeyboardEvent) {
+        const {keys} = this;
+        if (!keys.has(e.code)) return;
+        if (!keys.get(e.code)) return;
+        keys.set(e.code, false);
+    }
+
+    private onMouseMove(e: MouseEvent) {
         const { camera, isLocked, pointerSpeed } = this;
         if (!isLocked) return;
 
-        const movementX = event.movementX || 0;
-        const movementY = event.movementY || 0;
+        const movementX = e.movementX || 0;
+        const movementY = e.movementY || 0;
 
         _euler.setFromQuaternion(camera.quaternion);
 
