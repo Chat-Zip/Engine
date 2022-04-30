@@ -12,8 +12,9 @@ const _PI_2 = Math.PI / 2;
 
 export default class PointerLockControls extends EventDispatcher {
     private keys: Map<string, boolean>;
-    camera: Camera;
-    displacement: Vector3;
+    private self: Self;
+    private camera: Camera;
+    private displacement: Vector3;
     domElement: HTMLCanvasElement;
     isLocked: boolean;
     pointerSpeed: number;
@@ -31,7 +32,7 @@ export default class PointerLockControls extends EventDispatcher {
             ['ArrowRight', false],
             ['Space', false],
         ]);
-
+        this.self = self;
         this.camera = self.camera;
         this.displacement = new Vector3().fromArray(self.state.pos);
 
@@ -125,5 +126,34 @@ export default class PointerLockControls extends EventDispatcher {
 
     public unlock() {
         this.domElement.ownerDocument.exitPointerLock();
+    }
+
+    public getVelocity(delta: number) {
+        const {keys, self, displacement} = this;
+        const selfState = self.state;
+        const speed = selfState.speed * delta;
+        displacement.fromArray(selfState.pos);
+        return new Promise(resolve => {
+            if (keys.get('KeyW') || keys.get('ArrowUp')) {
+                this.moveForward(speed);
+            }
+            if (keys.get('KeyA') || keys.get('ArrowLeft')) {
+                this.moveRight(-speed);
+            }
+            if (keys.get('KeyS') || keys.get('ArrowDown')) {
+                this.moveForward(-speed);
+            }
+            if (keys.get('KeyD') || keys.get('ArrowRight')) {
+                this.moveRight(speed);
+            }
+            if (keys.get('Space') && selfState.onGround) {
+                selfState.gravAccel = selfState.jumpHeight;
+            }
+            resolve([
+                displacement.x - selfState.pos[0],
+                displacement.y - selfState.pos[1],
+                displacement.z - selfState.pos[2],
+            ]);
+        });
     }
 }
