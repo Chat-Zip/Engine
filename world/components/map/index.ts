@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import JSZip, { file } from "jszip";
 import Palette from "./Palette";
 
 const CHUNK_SIZE = 32;
@@ -337,5 +338,29 @@ export default class WorldMap {
             data += String.fromCharCode(uInt8Arr[i] - CONVERSION);
         }
         this.data = JSON.parse(data);
+    }
+
+    public async save(fileName: string) {
+        const { chunks, data } = this;
+        if (data.spawnPoint[0] === undefined) {
+            alert('맵의 스폰 위치를 설정해주세요!');
+            return;
+        }
+        if (fileName.length === 0) return;
+        const mapData = await this.exportMapData();
+        const map = new JSZip();
+        map.file('data', mapData);
+        chunks.forEach((data, id) => {
+            map.file(`chunks/${id}`, data);
+        });
+        map.generateAsync({type: 'blob'}).then(obj => {
+            const url = URL.createObjectURL(obj);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}.zip`;
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        })
     }
 }
