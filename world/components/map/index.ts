@@ -6,6 +6,8 @@ const CHUNK_SIZE_BIT = 5;
 const CHUNK_SLICE_SIZE = 1024;
 const CHUNK_SLICE_SIZE_BIT = 10;
 
+const CONVERSION = 128;
+
 const NEIGHBOR_OFFSETS = [
     [0, 0, 0], // self
     [-1, 0, 0], // left
@@ -74,17 +76,93 @@ const FACES = [
 
 const _material = new THREE.MeshLambertMaterial({vertexColors: true});
 
+interface MapData {
+    paletteColors: Array<string>;
+    spawnPoint: Array<number>;
+}
+
 export default class WorldMap {
     private scene: THREE.Scene;
     public chunks: Map<string, Uint8Array>;
     public meshs: Map<string, THREE.Mesh>;
-    public palette: Palette
+    public data: MapData;
+    public palette: Palette;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
         this.chunks = new Map();
         this.meshs = new Map();
-        this.palette = new Palette();
+        this.data = {
+            paletteColors: [
+                "",
+                "#060608",
+                "#141013",
+                "#3b1725",
+                "#73172d",
+                "#b4202a",
+                "#df3e23",
+                "#fa6a0a",
+                "#f9a31b",
+                "#ffd541",
+                "#fffc40",
+                "#d6f264",
+                "#9cdb43",
+                "#59c135",
+                "#14a02e",
+                "#1a7a3e",
+                "#24523b",
+                "#122020",
+                "#143464",
+                "#285cc4",
+                "#249fde",
+                "#20d6c7",
+                "#a6fcdb",
+                "#ffffff",
+                "#fef3c0",
+                "#fad6b8",
+                "#f5a097",
+                "#e86a73",
+                "#bc4a9b",
+                "#793a80",
+                "#403353",
+                "#242234",
+                "#221c1a",
+                "#322b28",
+                "#71413b",
+                "#bb7547",
+                "#dba463",
+                "#f4d29c",
+                "#dae0ea",
+                "#b3b9d1",
+                "#8b93af",
+                "#6d758d",
+                "#4a5462",
+                "#333941",
+                "#422433",
+                "#5b3138",
+                "#8e5252",
+                "#ba756a",
+                "#e9b5a3",
+                "#e3e6ff",
+                "#b9bffb",
+                "#849be4",
+                "#588dbe",
+                "#477d85",
+                "#23674e",
+                "#328464",
+                "#5daf8d",
+                "#92dcba",
+                "#cdf7e2",
+                "#e4d2aa",
+                "#c7b08b",
+                "#a08662",
+                "#796755",
+                "#5a4e44",
+                "#423934"
+            ],
+            spawnPoint: [undefined, undefined, undefined],
+        };
+        this.palette = new Palette(this.data.paletteColors);
     }
 
     public computeChunkId(x: number, y: number, z: number) {
@@ -239,5 +317,25 @@ export default class WorldMap {
             meshs.delete(chunkId);
             this.chunks.delete(chunkId);
         });
+    }
+
+    private exportMapData() {
+        return new Promise(resolve => {
+            const dataObj = JSON.stringify(this.data);
+            const DATA_LENGTH = dataObj.length;
+            const data = new Uint8Array(DATA_LENGTH);
+            for (let i = 0, j = DATA_LENGTH; i < j; i++) {
+                data[i] = dataObj.charCodeAt(i) + CONVERSION;
+            }
+            resolve(data);
+        });
+    }
+
+    private importMapData(uInt8Arr: Uint8Array) {
+        let data = "";
+        for (let i = 0, j = uInt8Arr.length; i < j; i++) {
+            data += String.fromCharCode(uInt8Arr[i] - CONVERSION);
+        }
+        this.data = JSON.parse(data);
     }
 }
