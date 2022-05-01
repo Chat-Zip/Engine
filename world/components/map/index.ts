@@ -363,4 +363,31 @@ export default class WorldMap {
             URL.revokeObjectURL(url);
         })
     }
+
+    public load(file: ArrayBuffer|Blob|File) {
+        const map = new JSZip();
+        return new Promise(resolve => {
+            map.loadAsync(file).then(() => {
+                this.clearAllChunks();
+                map.folder('chunks').forEach((chunk: string, file: JSZip.JSZipObject) => {
+                    file.async('uint8array').then((data: Uint8Array) => {
+                        this.chunks.set(chunk, data);
+                        const pos = chunk.split(',');
+                        const x = Number(pos[0]) << CHUNK_SIZE_BIT;
+                        const y = Number(pos[1]) << CHUNK_SIZE_BIT;
+                        const z = Number(pos[2]) << CHUNK_SIZE_BIT;
+                        this.updateChunkGeometry(x, y, z);
+                    }).then(() => {
+                        const dataFile = map.file('data');
+                        if (dataFile) {
+                            dataFile.async('uint8array').then((data: Uint8Array) => {
+                                this.importMapData(data);
+                                resolve(null);
+                            });
+                        }
+                    });
+                });
+            });
+        });
+    }
 }
