@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import Palette from "./Palette";
 
 const CHUNK_SIZE = 32;
 const CHUNK_SIZE_BIT = 5;
@@ -77,11 +78,13 @@ export default class WorldMap {
     private scene: THREE.Scene;
     public chunks: Map<string, Uint8Array>;
     public meshs: Map<string, THREE.Mesh>;
+    public palette: Palette
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
         this.chunks = new Map();
         this.meshs = new Map();
+        this.palette = new Palette();
     }
 
     public computeChunkId(x: number, y: number, z: number) {
@@ -162,7 +165,7 @@ export default class WorldMap {
                             corners.forEach(pos => {
                                 positions.push(pos[0] + x, pos[1] + y, pos[2] + z);
                                 normals.push(...dir);
-                                // colors.push(r, g, b);
+                                colors.push(...this.palette.getRGB(voxel));
                             });
                             index.push(ndx, ndx + 1, ndx + 2, ndx + 2, ndx + 1, ndx + 3);
                         }
