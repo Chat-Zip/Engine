@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import JSZip, { file } from "jszip";
+import JSZip from "jszip";
 import Palette from "./Palette";
 
 const CHUNK_SIZE = 32;
