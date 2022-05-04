@@ -78,22 +78,23 @@ const FACES = [
 const _material = new THREE.MeshLambertMaterial({vertexColors: true});
 
 interface MapData {
+    intensity: number;
     paletteColors: Array<string>;
     spawnPoint: Array<number>;
 }
 
 export default class WorldMap {
     private scene: THREE.Scene;
+    public data: MapData;
     public chunks: Map<string, Uint8Array>;
     public meshs: Map<string, THREE.Mesh>;
-    public data: MapData;
+    public light: THREE.HemisphereLight;
     public palette: Palette;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
-        this.chunks = new Map();
-        this.meshs = new Map();
         this.data = {
+            intensity: 1,
             paletteColors: [
                 "",
                 "#060608",
@@ -163,7 +164,14 @@ export default class WorldMap {
             ],
             spawnPoint: [undefined, undefined, undefined],
         };
+        this.chunks = new Map();
+        this.meshs = new Map();
+        this.light = new THREE.HemisphereLight(0xffffff, 0xaaaaaa, this.data.intensity);
         this.palette = new Palette(this.data.paletteColors);
+
+        this.light.matrixAutoUpdate = false;
+
+        this.scene.add(this.light);
     }
 
     public computeChunkId(x: number, y: number, z: number) {
