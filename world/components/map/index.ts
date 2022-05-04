@@ -374,26 +374,30 @@ export default class WorldMap {
 
     public load(file: ArrayBuffer|Blob|File) {
         const map = new JSZip();
+        const updateChunks: Promise<void>[] = [];
         return new Promise(resolve => {
             map.loadAsync(file).then(() => {
                 this.clearAllChunks();
                 map.folder('chunks').forEach((chunk: string, file: JSZip.JSZipObject) => {
-                    file.async('uint8array').then((data: Uint8Array) => {
-                        this.chunks.set(chunk, data);
-                        const pos = chunk.split(',');
-                        const x = Number(pos[0]) << CHUNK_SIZE_BIT;
-                        const y = Number(pos[1]) << CHUNK_SIZE_BIT;
-                        const z = Number(pos[2]) << CHUNK_SIZE_BIT;
-                        this.updateChunkGeometry(x, y, z);
-                    }).then(() => {
-                        const dataFile = map.file('data');
-                        if (dataFile) {
-                            dataFile.async('uint8array').then((data: Uint8Array) => {
-                                this.importMapData(data);
-                                resolve(null);
-                            });
-                        }
-                    });
+                    updateChunks.push(
+                        file.async('uint8array').then((data: Uint8Array) => {
+                            this.chunks.set(chunk, data);
+                            const pos = chunk.split(',');
+                            const x = Number(pos[0]) << CHUNK_SIZE_BIT;
+                            const y = Number(pos[1]) << CHUNK_SIZE_BIT;
+                            const z = Number(pos[2]) << CHUNK_SIZE_BIT;
+                            this.updateChunkGeometry(x, y, z);
+                        })
+                    );
+                });
+                Promise.all(updateChunks).then(() => {
+                    const dataFile = map.file('data');
+                    if (dataFile) {
+                        dataFile.async('uint8array').then((data: Uint8Array) => {
+                            this.importMapData(data);
+                            resolve(null);
+                        });
+                    }
                 });
             });
         });
