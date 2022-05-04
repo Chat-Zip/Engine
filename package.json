@@ -11,10 +11,10 @@
   "dependencies": {
     "jszip": "^3.9.1",
     "socket.io-client": "^4.5.0",
-    "three": "^0.139.2",
+    "three": "^0.140.0",
     "webrtc-adapter": "^8.1.1"
   },
   "devDependencies": {
-    "@types/three": "^0.139.0"
+    "@types/three": "^0.140.0"
   }
 }
