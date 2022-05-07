@@ -241,4 +241,13 @@ export default class WorldMap {
             this.chunks.delete(chunkId);
         });
     }
+
+    public loadChunkFromData(chunk: string, data: Uint8Array) {
+        this.chunks.set(chunk, data);
+        const pos = chunk.split(',');
+        const x = Number(pos[0]) << CHUNK_SIZE_BIT;
+        const y = Number(pos[1]) << CHUNK_SIZE_BIT;
+        const z = Number(pos[2]) << CHUNK_SIZE_BIT;
+        this.updateChunkGeometry(x, y, z);
+    }
 }
