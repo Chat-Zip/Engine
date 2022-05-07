@@ -1,14 +1,11 @@
 import * as THREE from "three";
-import JSZip from "jszip";
-import WORLD_DATA, { WorldData } from "../../WorldData";
+import World from "../..";
 import Palette from "./Palette";
 
 const CHUNK_SIZE = 32;
 const CHUNK_SIZE_BIT = 5;
 const CHUNK_SLICE_SIZE = 1024;
 const CHUNK_SLICE_SIZE_BIT = 10;
-
-const CONVERSION = 128;
 
 const NEIGHBOR_OFFSETS = [
     [0, 0, 0], // self
@@ -79,18 +76,16 @@ const FACES = [
 const _material = new THREE.MeshLambertMaterial({vertexColors: true});
 
 export default class WorldMap {
-    private scene: THREE.Scene;
-    private data: WorldData;
+    private world: World;
     public chunks: Map<string, Uint8Array>;
     public meshs: Map<string, THREE.Mesh>;
     public palette: Palette;
 
-    constructor(scene: THREE.Scene) {
-        this.scene = scene;
-        this.data = WORLD_DATA;
+    constructor(world: World) {
+        this.world = world;
         this.chunks = new Map();
         this.meshs = new Map();
-        this.palette = new Palette(this.data.paletteColors);
+        this.palette = new Palette(world.data.paletteColors);
     }
 
     public computeChunkId(x: number, y: number, z: number) {
@@ -240,85 +235,10 @@ export default class WorldMap {
         const {chunks, meshs} = this;
         chunks.forEach((_, chunkId) => {
             const chunkMesh = meshs.get(chunkId);
-            this.scene.remove(chunkMesh);
+            this.world.remove(chunkMesh);
             chunkMesh.geometry.dispose();
             meshs.delete(chunkId);
             this.chunks.delete(chunkId);
-        });
-    }
-
-    private exportMapData() {
-        return new Promise(resolve => {
-            const dataObj = JSON.stringify(this.data);
-            const DATA_LENGTH = dataObj.length;
-            const data = new Uint8Array(DATA_LENGTH);
-            for (let i = 0, j = DATA_LENGTH; i < j; i++) {
-                data[i] = dataObj.charCodeAt(i) + CONVERSION;
-            }
-            resolve(data);
-        });
-    }
-
-    private importMapData(uInt8Arr: Uint8Array) {
-        let data = "";
-        for (let i = 0, j = uInt8Arr.length; i < j; i++) {
-            data += String.fromCharCode(uInt8Arr[i] - CONVERSION);
-        }
-        this.data = JSON.parse(data);
-    }
-
-    public async save(fileName: string) {
-        const { chunks, data } = this;
-        if (data.spawnPoint[0] === undefined) {
-            alert('맵의 스폰 위치를 설정해주세요!');
-            return;
-        }
-        if (fileName.length === 0) return;
-        const mapData = await this.exportMapData();
-        const map = new JSZip();
-        map.file('data', mapData);
-        chunks.forEach((data, id) => {
-            map.file(`chunks/${id}`, data);
-        });
-        map.generateAsync({type: 'blob'}).then(obj => {
-            const url = URL.createObjectURL(obj);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${fileName}.zip`;
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-        })
-    }
-
-    public load(file: ArrayBuffer|Blob|File) {
-        const map = new JSZip();
-        const updateChunks: Promise<void>[] = [];
-        return new Promise(resolve => {
-            map.loadAsync(file).then(() => {
-                this.clearAllChunks();
-                map.folder('chunks').forEach((chunk: string, file: JSZip.JSZipObject) => {
-                    updateChunks.push(
-                        file.async('uint8array').then((data: Uint8Array) => {
-                            this.chunks.set(chunk, data);
-                            const pos = chunk.split(',');
-                            const x = Number(pos[0]) << CHUNK_SIZE_BIT;
-                            const y = Number(pos[1]) << CHUNK_SIZE_BIT;
-                            const z = Number(pos[2]) << CHUNK_SIZE_BIT;
-                            this.updateChunkGeometry(x, y, z);
-                        })
-                    );
-                });
-                Promise.all(updateChunks).then(() => {
-                    const dataFile = map.file('data');
-                    if (dataFile) {
-                        dataFile.async('uint8array').then((data: Uint8Array) => {
-                            this.importMapData(data);
-                            resolve(null);
-                        });
-                    }
-                });
-            });
         });
     }
 }
