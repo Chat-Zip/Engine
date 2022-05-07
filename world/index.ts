@@ -1,4 +1,5 @@
 import { Scene } from "three";
+import JSZip from "jszip";
 import Skybox from "./components/Skybox";
 import Light from "./components/Light";
 import WorldMap from "./components/map";
@@ -122,5 +123,29 @@ export default class World extends Scene {
             data += String.fromCharCode(uInt8Arr[i] - CONVERSION);
         }
         this.data = JSON.parse(data);
+    }
+
+    public async save(fileName: string) {
+        if (this.data.spawnPoint[0] === undefined) {
+            alert('맵의 스폰 위치를 설정해주세요!');
+            return;
+        }
+        if (fileName.length === 0) return;
+        const worldData = await this.exportWorldData();
+        const chunks = this.map.chunks;
+        const f = new JSZip();
+        f.file('data', worldData);
+        chunks.forEach((data, id) => {
+            f.file(`chunks/${id}`, data);
+        });
+        f.generateAsync({type: "blob"}).then(obj => {
+            const url = URL.createObjectURL(obj);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}.zip`;
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        });
     }
 }
