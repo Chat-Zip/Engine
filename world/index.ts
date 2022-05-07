@@ -3,6 +3,8 @@ import Skybox from "./components/Skybox";
 import Light from "./components/Light";
 import WorldMap from "./components/map";
 
+const CONVERSION = 128;
+
 export interface WorldData {
     skybox: Array<string>;
     intensity: number;
@@ -100,5 +102,25 @@ export default class World extends Scene {
         this.skybox = new Skybox(this.data.skybox);
         this.light = new Light(this.data.intensity);
         this.map = new WorldMap(this);
+    }
+
+    private exportWorldData() {
+        return new Promise(resolve => {
+            const dataObj = JSON.stringify(this.data);
+            const DATA_LENGTH = dataObj.length;
+            const data = new Uint8Array(DATA_LENGTH);
+            for (let i = 0, j = DATA_LENGTH; i < j; i++) {
+                data[i] = dataObj.charCodeAt(i) + CONVERSION;
+            }
+            resolve(data);
+        });
+    }
+
+    private importWorldData(uInt8Arr: Uint8Array) {
+        let data = "";
+        for (let i = 0, j = uInt8Arr.length; i < j; i++) {
+            data += String.fromCharCode(uInt8Arr[i] - CONVERSION);
+        }
+        this.data = JSON.parse(data);
     }
 }
