@@ -6,6 +6,11 @@ export default class Skybox {
     public texture: CubeTexture;
     public images: Array<string>;
 
+    constructor(imgUrls: Array<string>) {
+        this.images = imgUrls;
+        this.texture = _loader.load(imgUrls);
+    }
+
     load(imgUrls: Array<string>) {
         if (imgUrls.length !== 6) {
             console.error('Only need 6 images to make a skybox.');
