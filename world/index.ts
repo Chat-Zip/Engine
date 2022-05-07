@@ -148,4 +148,31 @@ export default class World extends Scene {
             URL.revokeObjectURL(url);
         });
     }
+
+    public load(file: ArrayBuffer|Blob|File) {
+        const f = new JSZip();
+        const map = this.map;
+        const updateChunks: Promise<void>[] = [];
+        return new Promise(resolve => {
+            f.loadAsync(file).then(() => {
+                map.clearAllChunks();
+                f.folder('chunks').forEach((chunk: string, file: JSZip.JSZipObject) => {
+                    updateChunks.push(
+                        file.async('uint8array').then((data: Uint8Array) => {
+                            map.loadChunkFromData(chunk, data);
+                        })
+                    );
+                });
+                Promise.all(updateChunks).then(() => {
+                    const dataFile = f.file('data');
+                    if (dataFile) {
+                        dataFile.async('uint8array').then((data: Uint8Array) => {
+                            this.importWorldData(data);
+                            resolve(null);
+                        });
+                    }
+                });
+            });
+        });
+    }
 }
