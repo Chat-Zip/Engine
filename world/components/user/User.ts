@@ -1,4 +1,4 @@
-import { Vector3 } from "three";
+import { Vector3, Camera } from "three";
 import UserModel from "./model";
 import Peer from "../../../connection/Peer";
 
@@ -8,6 +8,7 @@ export interface UserData {
 }
 
 export default class User extends UserModel implements UserData {
+    private camera: Camera;
     private prevPos: Vector3;
     private targetPos: Vector3;
     private alpha: number;
@@ -16,8 +17,9 @@ export default class User extends UserModel implements UserData {
     name: string;
     conn: Peer;
 
-    constructor(id: string, name: string) {
+    constructor(camera: Camera, id: string, name: string) {
         super(name);
+        this.camera = camera;
         this.prevPos = new Vector3();
         this.targetPos = new Vector3();
         this.alpha = 0;
@@ -37,6 +39,8 @@ export default class User extends UserModel implements UserData {
     }
 
     public update(delta: number) {
+        const camPos = this.camera.position;
+        this.appearance.lookAt(camPos.x, this.position.y + 8, camPos.z);
         if (this.alpha == 1) return;
         this.alpha = this.alpha > 1 ? 1 : this.alpha + delta * 10;
         this.position.lerpVectors(this.prevPos, this.targetPos, this.alpha);
