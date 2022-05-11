@@ -15,6 +15,8 @@ export default class Collider {
     public box: Box3;
     public size: Vector3;
 
+    public isActive: boolean;
+
     constructor(self: Self, worldMap: WorldMap) {
         this.state = self.state;
         this.pos = this.state.pos;
@@ -23,6 +25,8 @@ export default class Collider {
         this.box = new Box3();
         const collision = self.collision;
         this.size = new Vector3(collision.width, collision.height, collision.depth);
+
+        this.isActive = true;
     }
 
     public updateBox() {
@@ -64,6 +68,7 @@ export default class Collider {
     }
 
     public update(delta: number) {
+        if (!this.isActive) return;
         const { state, pos, map, box } = this;
         const velocity = state.velocity;
         const displacement = [...velocity];
