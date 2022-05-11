@@ -40,6 +40,8 @@ export default class Controls extends EventDispatcher {
             ['back', false],
             ['left', false],
             ['right', false],
+            ['top', false],
+            ['down', false],
             ['jump', false],
         ]);
         this.self = self;
@@ -89,6 +91,12 @@ export default class Controls extends EventDispatcher {
         }
         if (movements.get('right')) {
             this.moveRight(speed);
+        }
+        if (movements.get('top')) {
+            displacement.y += speed;
+        }
+        if (movements.get('down')) {
+            displacement.y -= speed;
         }
         if (movements.get('jump')) {
             if (userState.onGround) {
