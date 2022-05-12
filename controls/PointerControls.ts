@@ -1,8 +1,6 @@
 import Self from "../world/components/user/Self";
 import Controls from "./Controls";
-import Peer from "../connection/Peer";
-
-type Peers = Map<string, Peer>;
+import { Peers } from "../connection/Peer";
 
 interface Keys {
     move: Map<string, Function>;
