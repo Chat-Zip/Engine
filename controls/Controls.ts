@@ -1,8 +1,6 @@
 import { Euler, Vector3, Camera, EventDispatcher } from "three";
-import Peer from "../connection/Peer";
+import { Peers } from "../connection/Peer";
 import Self from "../world/components/user/Self";
-
-type Peers = Map<string, Peer>;
 
 const _euler = new Euler(0, 0, 0, "YXZ");
 const _vector = new Vector3();
@@ -76,10 +74,10 @@ export default class Controls extends EventDispatcher {
     }
 
     public update(delta: number) {
-        const userState = this.self.state;
-        const speed = userState.speed * delta;
+        const state = this.self.state;
+        const speed = state.speed * delta;
         const { movements, displacement } = this;
-        displacement.fromArray(userState.pos);
+        displacement.fromArray(state.pos);
         if (movements.get('forward')) {
             this.moveForward(speed);
         }
@@ -99,15 +97,15 @@ export default class Controls extends EventDispatcher {
             displacement.y -= speed;
         }
         if (movements.get('jump')) {
-            if (userState.onGround) {
-                userState.gravAccel = userState.jumpHeight;
+            if (state.onGround) {
+                state.gravAccel = state.jumpHeight;
             }
         }
         // Return velocity
         return [
-            displacement.x - userState.pos[0],
-            displacement.y - userState.pos[1],
-            displacement.z - userState.pos[2],
+            displacement.x - state.pos[0],
+            displacement.y - state.pos[1],
+            displacement.z - state.pos[2],
         ]
     }
 
