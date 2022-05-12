@@ -1,5 +1,8 @@
-import { UserData } from "./User";
 import { PerspectiveCamera } from "three";
+import { UserData } from "./User";
+import World from "../../index";
+import Collider from "../../physics/Collider";
+import Gravity from "../../physics/Gravity";
 
 export interface SelfState {
     pos: Array<number>;
@@ -22,6 +25,8 @@ export interface SelfInterface {
     state: SelfState;
     collision: CollisionRange;
     camera: PerspectiveCamera;
+    collider: Collider;
+    gravity: Gravity;
 }
 
 export default class Self implements SelfInterface {
@@ -29,8 +34,10 @@ export default class Self implements SelfInterface {
     state: SelfState;
     collision: CollisionRange;
     camera: PerspectiveCamera;
+    collider: Collider;
+    gravity: Gravity;
 
-    constructor(id: string, name: string) {
+    constructor(world: World, id: string, name: string) {
         this.data = {
             userId: id,
             name: name,
@@ -50,5 +57,7 @@ export default class Self implements SelfInterface {
             depth: 4,
         };
         this.camera = new PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 256);
+        this.collider = new Collider(this, world.map);
+        this.gravity = new Gravity(this.state);
     }
 }
