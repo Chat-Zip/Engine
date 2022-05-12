@@ -53,3 +53,5 @@ export default class Peer extends RTCPeerConnection {
         super.close();
     }
 }
+
+export type Peers = Map<string, Peer>;
