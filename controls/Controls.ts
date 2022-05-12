@@ -73,7 +73,7 @@ export default class Controls extends EventDispatcher {
         displacement.addScaledVector(_vector, distance);
     }
 
-    public update(delta: number) {
+    public getVelocity(delta: number) {
         const state = this.self.state;
         const speed = state.speed * delta;
         const { movements, displacement } = this;
