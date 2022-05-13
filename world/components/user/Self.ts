@@ -1,12 +1,10 @@
 import { PerspectiveCamera } from "three";
 import { UserData } from "./User";
 import Peer, { Peers } from "../../../connection/Peer";
+import Controls from "../../../controls/Controls";
 import World from "../../index";
 import Collider from "../../physics/Collider";
 import Gravity from "../../physics/Gravity";
-
-const user = navigator.userAgent;
-const isMobile = user.indexOf('iPhone') > -1 || user.indexOf('Android') > -1 || user.indexOf('iPad') > -1 || user.indexOf('iPod') > -1;
 
 export interface SelfState {
     pos: Array<number>;
@@ -28,6 +26,7 @@ export interface SelfInterface {
     data: UserData;
     state: SelfState;
     peers: Peers;
+    controls: Controls;
     collision: CollisionRange;
     camera: PerspectiveCamera;
     collider: Collider;
@@ -38,6 +37,7 @@ export default class Self implements SelfInterface {
     data: UserData;
     state: SelfState;
     peers: Peers;
+    controls: Controls;
     collision: CollisionRange;
     camera: PerspectiveCamera;
     collider: Collider;
@@ -66,5 +66,9 @@ export default class Self implements SelfInterface {
         this.camera = new PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 256);
         this.collider = new Collider(this, world.map);
         this.gravity = new Gravity(this.state);
+    }
+
+    public setControls(controls: Controls) {
+        this.controls = controls;
     }
 }
