@@ -1,5 +1,6 @@
 import { PerspectiveCamera } from "three";
 import { UserData } from "./User";
+import Peer, { Peers } from "../../../connection/Peer";
 import World from "../../index";
 import Collider from "../../physics/Collider";
 import Gravity from "../../physics/Gravity";
@@ -23,6 +24,7 @@ export interface CollisionRange {
 export interface SelfInterface {
     data: UserData;
     state: SelfState;
+    peers: Peers;
     collision: CollisionRange;
     camera: PerspectiveCamera;
     collider: Collider;
@@ -32,6 +34,7 @@ export interface SelfInterface {
 export default class Self implements SelfInterface {
     data: UserData;
     state: SelfState;
+    peers: Peers;
     collision: CollisionRange;
     camera: PerspectiveCamera;
     collider: Collider;
@@ -56,6 +59,7 @@ export default class Self implements SelfInterface {
             height: 14,
             depth: 4,
         };
+        this.peers = new Map<string, Peer>();
         this.camera = new PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 256);
         this.collider = new Collider(this, world.map);
         this.gravity = new Gravity(this.state);
