@@ -18,7 +18,10 @@ export default class Gravity {
     public update(delta: number) {
         if (!this.isActive) return;
         const { velovity, gravity, gravAccel } = this;
-        this.gravAccel -= gravity * delta;
-        velovity[1] += gravAccel * delta;
+        return new Promise(resolve => {
+            this.gravAccel -= gravity * delta;
+            velovity[1] += gravAccel * delta;
+            resolve(null);
+        });
     }
 }
