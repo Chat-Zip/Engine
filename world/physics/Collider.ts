@@ -76,53 +76,56 @@ export default class Collider {
 
         this.updateBox();
 
-        for (let i = 0; i < 3; i++) {
-            collisionTime = 1;
-            let collNormal = new Int8Array(3);
-            const minX = Math.floor(box.min.x + velocity[0]);
-            const maxX = Math.ceil(box.max.x + velocity[0]);
-            const minY = Math.floor(box.min.y + velocity[1]);
-            const maxY = Math.ceil(box.max.y + velocity[1]);
-            const minZ = Math.floor(box.min.z + velocity[2]);
-            const maxZ = Math.ceil(box.max.z + velocity[2]);
-            for (let y = minY; y < maxY; y++) {
-                for (let x = minX; x < maxX; x++) {
-                    for (let z = minZ; z < maxZ; z++) {
-                        if (map.getVoxel(x, y, z) === 0) continue;
-                        const {entryTime, normal} = this.sweptAABB(x, y, z);
-                        if (entryTime === 1) continue;
-                        if (entryTime < collisionTime) {
-                            collisionTime = entryTime;
-                            collNormal = normal;
-                        } 
+        return new Promise(resolve => {
+            for (let i = 0; i < 3; i++) {
+                collisionTime = 1;
+                let collNormal = new Int8Array(3);
+                const minX = Math.floor(box.min.x + velocity[0]);
+                const maxX = Math.ceil(box.max.x + velocity[0]);
+                const minY = Math.floor(box.min.y + velocity[1]);
+                const maxY = Math.ceil(box.max.y + velocity[1]);
+                const minZ = Math.floor(box.min.z + velocity[2]);
+                const maxZ = Math.ceil(box.max.z + velocity[2]);
+                for (let y = minY; y < maxY; y++) {
+                    for (let x = minX; x < maxX; x++) {
+                        for (let z = minZ; z < maxZ; z++) {
+                            if (map.getVoxel(x, y, z) === 0) continue;
+                            const {entryTime, normal} = this.sweptAABB(x, y, z);
+                            if (entryTime === 1) continue;
+                            if (entryTime < collisionTime) {
+                                collisionTime = entryTime;
+                                collNormal = normal;
+                            } 
+                        }
                     }
                 }
-            }
-            if (collisionTime === 1) break;
-            collisionTime -= EPSILON;
-            if (collNormal[0] !== 0) {
-                velocity[0] = 0;
-                displacement[0] *= collisionTime;
-                continue;
-            }
-            if (collNormal[1] !== 0) {
-                if (collNormal[1] === 1) {
-                    state.onGround = true;
+                if (collisionTime === 1) break;
+                collisionTime -= EPSILON;
+                if (collNormal[0] !== 0) {
+                    velocity[0] = 0;
+                    displacement[0] *= collisionTime;
+                    continue;
                 }
-                state.gravAccel = 0;
-                velocity[1] = 0;
-                displacement[1] *= collisionTime;
-                continue;
+                if (collNormal[1] !== 0) {
+                    if (collNormal[1] === 1) {
+                        state.onGround = true;
+                    }
+                    state.gravAccel = 0;
+                    velocity[1] = 0;
+                    displacement[1] *= collisionTime;
+                    continue;
+                }
+                if (collNormal[2] !== 0) {
+                    velocity[2] = 0;
+                    displacement[2] *= collisionTime;
+                }
             }
-            if (collNormal[2] !== 0) {
-                velocity[2] = 0;
-                displacement[2] *= collisionTime;
-            }
-        }
-        if (state.gravAccel !== 0) state.onGround = false;
-        pos[0] += displacement[0];
-        pos[1] += displacement[1];
-        pos[2] += displacement[2];
-        this.updateBox();
+            if (state.gravAccel !== 0) state.onGround = false;
+            pos[0] += displacement[0];
+            pos[1] += displacement[1];
+            pos[2] += displacement[2];
+            this.updateBox();
+            resolve(null);
+        });
     }
 }
