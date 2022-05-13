@@ -71,4 +71,12 @@ export default class Self implements SelfInterface {
     public setControls(controls: Controls) {
         this.controls = controls;
     }
+
+    public update(delta: number) {
+        const { controls, gravity, collider } = this;
+        if (controls === undefined || controls === null) {
+            console.error('Please use setControls() to define controls');
+            return;
+        }
+    }
 }
