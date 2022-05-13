@@ -5,6 +5,9 @@ import World from "../../index";
 import Collider from "../../physics/Collider";
 import Gravity from "../../physics/Gravity";
 
+const user = navigator.userAgent;
+const isMobile = user.indexOf('iPhone') > -1 || user.indexOf('Android') > -1 || user.indexOf('iPad') > -1 || user.indexOf('iPod') > -1;
+
 export interface SelfState {
     pos: Array<number>;
     velocity: Array<number>;
