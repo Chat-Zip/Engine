@@ -78,5 +78,10 @@ export default class Self implements SelfInterface {
             console.error('Please use setControls() to define controls');
             return;
         }
+        Promise.all([
+            controls.update(delta),
+            gravity.update(delta),
+            collider.update(delta),
+        ]);
     }
 }
