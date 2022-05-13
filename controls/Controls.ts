@@ -73,40 +73,41 @@ export default class Controls extends EventDispatcher {
         displacement.addScaledVector(_vector, distance);
     }
 
-    public getVelocity(delta: number) {
+    public update(delta: number) {
         const state = this.self.state;
         const speed = state.speed * delta;
+        const velocity = state.velocity;
         const { movements, displacement } = this;
-        displacement.fromArray(state.pos);
-        if (movements.get('forward')) {
-            this.moveForward(speed);
-        }
-        if (movements.get('back')) {
-            this.moveForward(-speed);
-        }
-        if (movements.get('left')) {
-            this.moveRight(-speed);
-        }
-        if (movements.get('right')) {
-            this.moveRight(speed);
-        }
-        if (movements.get('top')) {
-            displacement.y += speed;
-        }
-        if (movements.get('down')) {
-            displacement.y -= speed;
-        }
-        if (movements.get('jump')) {
-            if (state.onGround) {
-                state.gravAccel = state.jumpHeight;
+        return new Promise(resolve => {
+            displacement.fromArray(state.pos);
+            if (movements.get('forward')) {
+                this.moveForward(speed);
             }
-        }
-        // Return velocity
-        return [
-            displacement.x - state.pos[0],
-            displacement.y - state.pos[1],
-            displacement.z - state.pos[2],
-        ]
+            if (movements.get('back')) {
+                this.moveForward(-speed);
+            }
+            if (movements.get('left')) {
+                this.moveRight(-speed);
+            }
+            if (movements.get('right')) {
+                this.moveRight(speed);
+            }
+            if (movements.get('top')) {
+                displacement.y += speed;
+            }
+            if (movements.get('down')) {
+                displacement.y -= speed;
+            }
+            if (movements.get('jump')) {
+                if (state.onGround) {
+                    state.gravAccel = state.jumpHeight;
+                }
+            }
+            velocity[0] = displacement.x - state.pos[0]
+            velocity[1] = displacement.y - state.pos[1]
+            velocity[2] = displacement.z - state.pos[2]
+            resolve(null);
+        });
     }
 
     public tick() {
