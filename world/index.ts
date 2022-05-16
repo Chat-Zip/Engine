@@ -3,6 +3,7 @@ import JSZip from "jszip";
 import Skybox from "./components/Skybox";
 import Light from "./components/Light";
 import WorldMap from "./components/map";
+import Self from "./components/user/Self";
 
 const CONVERSION = 128;
 
@@ -18,6 +19,7 @@ export default class World extends Scene {
     public skybox: Skybox;
     public light: Light;
     public map: WorldMap;
+    public self: Self;
 
     constructor() {
         super();
@@ -103,6 +105,7 @@ export default class World extends Scene {
         this.skybox = new Skybox(this.data.skybox);
         this.light = new Light(this.data.intensity);
         this.map = new WorldMap(this);
+        this.self = new Self(this);
     }
 
     private exportWorldData() {
