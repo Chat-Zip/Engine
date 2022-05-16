@@ -25,20 +25,16 @@ export interface CollisionRange {
 export interface SelfInterface {
     data: UserData;
     state: SelfState;
-    peers: Peers;
-    controls: Controls;
     collision: CollisionRange;
-    camera: PerspectiveCamera;
-    collider: Collider;
-    gravity: Gravity;
 }
 
 export default class Self implements SelfInterface {
     data: UserData;
     state: SelfState;
+    collision: CollisionRange;
+
     peers: Peers;
     controls: Controls;
-    collision: CollisionRange;
     camera: PerspectiveCamera;
     collider: Collider;
     gravity: Gravity;
