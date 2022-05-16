@@ -108,12 +108,13 @@ export default class World extends Scene {
     private exportWorldData() {
         return new Promise(resolve => {
             const dataObj = JSON.stringify(this.data);
-            const DATA_LENGTH = dataObj.length;
-            const data = new Uint8Array(DATA_LENGTH);
-            for (let i = 0, j = DATA_LENGTH; i < j; i++) {
-                data[i] = dataObj.charCodeAt(i) + CONVERSION;
+            const sequence = [];
+            for (let i = 0, j = dataObj.length; i < j; i++) {
+                sequence.push(dataObj.charCodeAt(i) + CONVERSION);
             }
-            resolve(data);
+            Promise.all(sequence).then(arr => {
+                resolve(new Uint8Array(arr));
+            });
         });
     }
 
