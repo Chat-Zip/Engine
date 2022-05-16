@@ -43,10 +43,10 @@ export default class Self implements SelfInterface {
     collider: Collider;
     gravity: Gravity;
 
-    constructor(world: World, id: string, name: string) {
+    constructor(world: World) {
         this.data = {
-            userId: id,
-            name: name,
+            userId: "",
+            name: "",
         };
         this.state = {
             pos: [0, 0, 0],
