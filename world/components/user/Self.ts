@@ -69,15 +69,17 @@ export default class Self implements SelfInterface {
     }
 
     public update(delta: number) {
-        const { controls, gravity, collider } = this;
+        const { controls } = this;
         if (controls === undefined || controls === null) {
             console.error('Please use setControls() to define controls');
             return;
         }
+        const { camera, gravity, collider } = this;
+        const pos = this.state.pos;
         Promise.all([
             controls.update(delta),
             gravity.update(delta),
             collider.update(delta),
-        ]);
+        ]).then(() => camera.position.set(pos[0], pos[1] + 13, pos[2]));
     }
 }
