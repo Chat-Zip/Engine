@@ -171,8 +171,13 @@ export default class World extends Scene {
                     const dataFile = f.file('data');
                     if (dataFile) {
                         dataFile.async('uint8array').then((data: Uint8Array) => {
-                            this.importWorldData(data);
-                            resolve(null);
+                            this.importWorldData(data).then((importData: WorldData) => {
+                                if (importData.skybox) this.data.skybox = importData.skybox;
+                                if (importData.intensity) this.data.intensity = importData.intensity;
+                                if (importData.paletteColors) this.data.paletteColors = importData.paletteColors;
+                                if (importData.spawnPoint) this.data.spawnPoint = importData.spawnPoint;
+                                resolve(null);
+                            });
                         });
                     }
                 });
