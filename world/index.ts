@@ -118,11 +118,15 @@ export default class World extends Scene {
     }
 
     private importWorldData(uInt8Arr: Uint8Array) {
-        let data = "";
-        for (let i = 0, j = uInt8Arr.length; i < j; i++) {
-            data += String.fromCharCode(uInt8Arr[i] - CONVERSION);
-        }
-        this.data = JSON.parse(data);
+        return new Promise(resolve => {
+            const sequence = [];
+            for (let i = 0, j = uInt8Arr.length; i < j; i++) {
+                sequence.push(String.fromCharCode(uInt8Arr[i] - CONVERSION));
+            }
+            Promise.all(sequence).then(arr => {
+                resolve(JSON.parse(arr.toString().replace(/,/g, "")));
+            });
+        });
     }
 
     public async save(fileName: string) {
