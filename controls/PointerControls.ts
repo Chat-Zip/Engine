@@ -35,6 +35,30 @@ export default class PointerControls extends Controls {
             scope.dispatchEvent(_changeEvent);
         }
 
+        function updateMovementFromKey(keyCode: string, isDown: boolean) {
+            const key = scope.keys.move;
+            if (!key.has(keyCode)) return;
+            key.get(keyCode)(isDown);
+        }
+
+        function eventKeyDown(e: KeyboardEvent) {
+            const { move, ui } = scope.keys;
+            const keyCode = e.code;
+            if (move.has(keyCode)) {
+                updateMovementFromKey(e.code, true);
+                return;
+            }
+            if (ui.has(keyCode)) {
+                ui.get(keyCode)();
+            }
+        }
+
+        function eventKeyUp(e: KeyboardEvent) {
+            const keyCode = e.code;
+            if (!scope.keys.move.get(keyCode)) return;
+            updateMovementFromKey(keyCode, false);
+        }
+
         function onPointerLockChange() {
             if (scope.domElement.ownerDocument.pointerLockElement === scope.domElement) {
                 scope.dispatchEvent(_lockEvent);
@@ -51,41 +75,21 @@ export default class PointerControls extends Controls {
         this.connect = () => {
             const ownerDocument = scope.domElement.ownerDocument;
             ownerDocument.addEventListener('mousemove', onMouseMove);
+            ownerDocument.addEventListener('keydown', eventKeyDown);
+            ownerDocument.addEventListener('keyup', eventKeyUp);
             ownerDocument.addEventListener('pointerlockchange', onPointerLockChange);
             ownerDocument.addEventListener('pointerlockerror', onPointerLockError);
         }
 
         this.disconnect = () => {
             const ownerDocument = scope.domElement.ownerDocument;
-            ownerDocument.addEventListener('mousemove', onMouseMove);
-            ownerDocument.addEventListener('pointerlockchange', onPointerLockChange);
-            ownerDocument.addEventListener('pointerlockerror', onPointerLockError);
+            ownerDocument.removeEventListener('mousemove', onMouseMove);
+            ownerDocument.removeEventListener('keydown', eventKeyDown);
+            ownerDocument.removeEventListener('keyup', eventKeyUp);
+            ownerDocument.removeEventListener('pointerlockchange', onPointerLockChange);
+            ownerDocument.removeEventListener('pointerlockerror', onPointerLockError);
         }
         this.connect();
-    }
-
-    public updateMovementFromKey(keyCode: string, isDown: boolean) {
-        const key = this.keys.move;
-        if (!key.has(keyCode)) return;
-        key.get(keyCode)(isDown);
-    }
-
-    public eventKeyDown(e: KeyboardEvent) {
-        const { move, ui } = this.keys;
-        const keyCode = e.code;
-        if (move.has(keyCode)) {
-            this.updateMovementFromKey(e.code, true);
-            return;
-        }
-        if (ui.has(keyCode)) {
-            ui.get(keyCode)();
-        }
-    }
-
-    public eventKeyUp(e: KeyboardEvent) {
-        const keyCode = e.code;
-        if (!this.keys.move.get(keyCode)) return;
-        this.updateMovementFromKey(keyCode, false);
     }
 
     public lock() {
