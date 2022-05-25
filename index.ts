@@ -1,56 +1,41 @@
 import { Clock } from "three";
 import World from "./world";
-import TouchControls from "./controls/TouchControls";
-import PointerControls from "./controls/PointerControls";
+import Controls from "./controls/Controls";
 import Renderer from "./Renderer";
 
 const clock = new Clock();
 const TICK = 0.1;
 let duration = 0;
 
-const userAgent = navigator.userAgent;
-const isMobile = userAgent.indexOf('iPhone') > -1 || userAgent.indexOf('Android') > -1 || userAgent.indexOf('iPad') > -1 || userAgent.indexOf('iPod') > -1;
-
 export default class Engine {
     public world: World;
-    public controls: TouchControls | PointerControls;
+    public controls: Controls;
     public renderer: Renderer;
 
     public tickUpdate: boolean;
 
     constructor() {
         this.world = new World();
-        this.controls = undefined;
+        this.controls = this.world.self.controls;
         this.renderer = undefined;
         this.tickUpdate = true;
     }
 
     private tick() {
-        this.controls.tick();
+        const { controls } = this;
+        if (controls === undefined) {
+            return;
+        }
+        controls.tick();
     }
 
-    private loop() {
-        const { world, renderer, tickUpdate } = this;
-        const delta = clock.getDelta();
-        const self = world.self;
-
-        self.update(delta);
-
-        renderer.render(world, self.camera);
-
-        if (!tickUpdate) return;
-        duration += delta;
-        if (duration < TICK) return;
-        this.tick();
-        duration = 0;
+    public setControls(controls: Controls) {
+        this.world.self.controls = controls;
     }
 
     public setCanvasToRenderer(canvas: HTMLCanvasElement) {
-        const self = this.world.self;
-        const camera = self.camera;
+        const camera = this.world.self.camera;
         this.renderer = new Renderer(canvas);
-        this.controls = isMobile ? new TouchControls(self, canvas, self.peers) : new PointerControls(self, canvas, self.peers);
-        self.setControls(this.controls);
 
         window.addEventListener('resize', () => {
             const width = window.innerWidth;
@@ -67,7 +52,21 @@ export default class Engine {
             console.error('Please select the canvas element using setCanvasToRenderer()');
             return;
         }
-        renderer.setAnimationLoop(this.loop);
+        const { world, tickUpdate } = this;
+        renderer.setAnimationLoop(() => {
+            const delta = clock.getDelta();
+            const self = world.self;
+
+            self.update(delta);
+
+            renderer.render(world, self.camera);
+
+            if (!tickUpdate) return;
+            duration += delta;
+            if (duration < TICK) return;
+            this.tick();
+            duration = 0;
+        });
     }
 
     public stop() {
