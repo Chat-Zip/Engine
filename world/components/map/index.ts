@@ -141,9 +141,9 @@ export default class WorldMap {
 
     public generateGeometryData(chunkX: number, chunkY: number, chunkZ: number) {
         //BufferAttribute for BufferGeometry
-        const positions = []; // vertex position data
-        const normals = []; // vertex normal data
-        const colors = []; // (r, g, b)
+        const positions: number[] = []; // vertex position data
+        const normals: number[] = []; // vertex normal data
+        const colors: number[] = []; // (r, g, b)
         const index = []; // vertext positions array
 
         const startX = chunkX << CHUNK_SIZE_BIT;
@@ -178,7 +178,7 @@ export default class WorldMap {
     }
 
     public updateVoxelGeometry(x: number, y: number, z: number) {
-        const updatedChunkIds = [];
+        const updatedChunkIds: string[] = [];
         NEIGHBOR_OFFSETS.forEach(offset => {
             const oX = x + offset[0];
             const oY = y + offset[1];
@@ -219,6 +219,7 @@ export default class WorldMap {
             mesh.matrixAutoUpdate = false;
             mesh.name = chunkId;
             mesh.position.set(cX << CHUNK_SIZE_BIT, cY << CHUNK_SIZE_BIT, cZ << CHUNK_SIZE_BIT);
+            this.world.add(mesh);
             this.meshs.set(chunkId, mesh);
         }
 
