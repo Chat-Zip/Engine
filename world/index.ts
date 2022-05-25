@@ -1,4 +1,4 @@
-import { Scene } from "three";
+import { Scene, Color } from "three";
 import JSZip from "jszip";
 import Skybox from "./components/Skybox";
 import Light from "./components/Light";
@@ -106,9 +106,13 @@ export default class World extends Scene {
         this.light = new Light(this.data.intensity);
         this.map = new WorldMap(this);
         this.self = new Self(this);
+
+        // this.background = new Color(0x87ceeb);
+        this.background = this.skybox.texture;
+        this.add(this.light);
     }
 
-    private exportWorldData() {
+    private exportWorldData(): Promise<Uint8Array> {
         return new Promise(resolve => {
             const dataObj = JSON.stringify(this.data);
             const sequence = [];
@@ -121,7 +125,7 @@ export default class World extends Scene {
         });
     }
 
-    private importWorldData(uInt8Arr: Uint8Array) {
+    private importWorldData(uInt8Arr: Uint8Array): Promise<WorldData> {
         return new Promise(resolve => {
             const sequence = [];
             for (let i = 0, j = uInt8Arr.length; i < j; i++) {
