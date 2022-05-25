@@ -59,18 +59,15 @@ export default class Self implements SelfInterface {
             depth: 4,
         };
         this.peers = new Map<string, Peer>();
+        this.controls = undefined;
         this.camera = new PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 256);
         this.collider = new Collider(this, world.map);
         this.gravity = new Gravity(this.state);
     }
 
-    public setControls(controls: Controls) {
-        this.controls = controls;
-    }
-
     public update(delta: number) {
         const { controls } = this;
-        if (controls === undefined || controls === null) {
+        if (controls === undefined) {
             console.error('Please use setControls() to define controls');
             return;
         }
