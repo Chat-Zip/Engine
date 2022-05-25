@@ -8,7 +8,9 @@ export default class Skybox {
 
     constructor(imgUrls: Array<string>) {
         this.images = imgUrls;
-        this.texture = _loader.load(imgUrls);
+        this.load(imgUrls).then((texture: CubeTexture) => {
+            this.texture = texture;
+        });
     }
 
     load(imgUrls: Array<string>) {
@@ -23,7 +25,7 @@ export default class Skybox {
                 () => {
                     this.texture.matrixAutoUpdate = false;
                     this.texture.updateMatrix();
-                    resolve(null);
+                    resolve(this.texture);
                 },
                 null,
                 (e) => {
