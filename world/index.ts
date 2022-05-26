@@ -1,9 +1,16 @@
-import { Scene, Color } from "three";
+import { Scene } from "three";
 import JSZip from "jszip";
 import Skybox from "./components/Skybox";
 import Light from "./components/Light";
 import WorldMap from "./components/map";
 import Self from "./components/user/Self";
+
+import SKYBOX_PX from "../assets/skybox/px.png";
+import SKYBOX_NX from "../assets/skybox/nx.png";
+import SKYBOX_PY from "../assets/skybox/py.png";
+import SKYBOX_NY from "../assets/skybox/ny.png";
+import SKYBOX_PZ from "../assets/skybox/pz.png";
+import SKYBOX_NZ from "../assets/skybox/nz.png";
 
 const CONVERSION = 128;
 
@@ -25,12 +32,12 @@ export default class World extends Scene {
         super();
         this.data = {
             skybox: [
-                '../assets/skybox/px.png',
-                '../assets/skybox/nx.png',
-                '../assets/skybox/py.png',
-                '../assets/skybox/ny.png',
-                '../assets/skybox/pz.png',
-                '../assets/skybox/nz.png',
+                SKYBOX_PX,
+                SKYBOX_NX,
+                SKYBOX_PY,
+                SKYBOX_NY,
+                SKYBOX_PZ,
+                SKYBOX_NZ
             ],
             intensity: 1,
             paletteColors: [
@@ -107,7 +114,6 @@ export default class World extends Scene {
         this.map = new WorldMap(this);
         this.self = new Self(this);
 
-        // this.background = new Color(0x87ceeb);
         this.background = this.skybox.texture;
         this.add(this.light);
     }
