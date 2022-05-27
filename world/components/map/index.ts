@@ -126,7 +126,7 @@ export default class WorldMap {
         return chunk[voxelOffset];
     }
 
-    public setblock(x: number, y: number, z: number, voxel: number) {
+    public setBlock(x: number, y: number, z: number, voxel: number) {
         let chunk = this.getChunkForVoxel(x, y, z);
         if (!chunk) chunk = this.addChunkForVoxel(x, y, z);
         for (let i = 0; i < 8; i++) {
