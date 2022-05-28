@@ -133,13 +133,13 @@ export default class World extends Scene {
 
     private importWorldData(uInt8Arr: Uint8Array): Promise<WorldData> {
         return new Promise(resolve => {
-            const sequence = [];
+            let data = "";
             for (let i = 0, j = uInt8Arr.length; i < j; i++) {
-                sequence.push(String.fromCharCode(uInt8Arr[i] - CONVERSION));
+                data += String.fromCharCode(uInt8Arr[i] - CONVERSION);
             }
-            Promise.all(sequence).then(arr => {
-                resolve(JSON.parse(arr.toString().replace(/,/g, "")));
-            });
+            const json = JSON.parse(data);
+            console.log(json);
+            resolve(json);
         });
     }
 
