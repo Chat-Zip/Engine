@@ -213,6 +213,7 @@ export default class WorldMap {
             new THREE.BufferAttribute(new Float32Array(colors), 3)
         );
         geometry.setIndex(index);
+        geometry.computeBoundingSphere();
 
         if (!mesh) {
             mesh = new THREE.Mesh(geometry, _material);
