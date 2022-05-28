@@ -31,7 +31,7 @@ export default class Collider {
 
     public updateBox() {
         const { pos, box, size } = this;
-        _boxCenter.set(pos[0], pos[0] + 7, pos[2]);
+        _boxCenter.set(pos[0], pos[1] + 7, pos[2]);
         box.setFromCenterAndSize(_boxCenter, size);
     }
 
