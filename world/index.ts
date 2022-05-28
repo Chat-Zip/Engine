@@ -154,7 +154,7 @@ export default class World extends Scene {
         chunks.forEach((data, id) => {
             f.file(`chunks/${id}`, data);
         });
-        f.generateAsync({type: "blob"}).then(obj => {
+        f.generateAsync({type: "blob", compression: "DEFLATE", compressionOptions: {level: 9}}).then(obj => {
             const url = URL.createObjectURL(obj);
             const a = document.createElement('a');
             a.href = url;
