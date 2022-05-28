@@ -132,7 +132,7 @@ export default class WorldMap {
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
                 for (let k = 0; k < 8; k++) {
-                    const voxelOffset = this.computeVoxelOffset(x, y, z);
+                    const voxelOffset = this.computeVoxelOffset(x + k, y + i, z + j);
                     chunk[voxelOffset] = voxel;
                 }
             }
