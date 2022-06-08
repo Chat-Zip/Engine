@@ -6,10 +6,10 @@ export default class UserModel extends Group {
     public nameLabel: NameLabel;
     public appearance: UserAppearance;
 
-    constructor(name: string) {
+    constructor(name: string, avatar: string) {
         super();
         this.nameLabel = new NameLabel(name);
-        this.appearance = new UserAppearance();
+        this.appearance = new UserAppearance(avatar);
         this.add(this.nameLabel);
         this.add(this.appearance);
     }
