@@ -5,6 +5,7 @@ import Peer from "../../../connection/Peer";
 export interface UserData {
     userId: string;
     name: string;
+    avatar: string;
 }
 
 export default class User extends UserModel implements UserData {
@@ -15,10 +16,11 @@ export default class User extends UserModel implements UserData {
 
     userId: string;
     name: string;
+    avatar: string;
     conn: Peer;
 
-    constructor(camera: Camera, id: string, name: string) {
-        super(name);
+    constructor(camera: Camera, id: string, name: string, avatar: string) {
+        super(name, avatar);
         this.camera = camera;
         this.prevPos = new Vector3();
         this.targetPos = new Vector3();
