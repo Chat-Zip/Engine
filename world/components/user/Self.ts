@@ -41,8 +41,9 @@ export default class Self implements SelfInterface {
 
     constructor(world: World) {
         this.data = {
-            userId: "",
-            name: "",
+            userId: undefined,
+            name: undefined,
+            avatar: undefined,
         };
         this.state = {
             pos: [0, 0, 0],
