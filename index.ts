@@ -13,12 +13,14 @@ export default class Engine {
     public renderer: Renderer;
 
     public tickUpdate: boolean;
+    public updates: Array<object>;
 
     constructor() {
         this.world = new World();
         this.controls = this.world.self.controls;
         this.renderer = undefined;
         this.tickUpdate = true;
+        this.updates = [this.world.self];
     }
 
     private tick() {
@@ -52,12 +54,14 @@ export default class Engine {
             console.error('Please select the canvas element using setCanvasToRenderer()');
             return;
         }
-        const { world, tickUpdate } = this;
+        const { world, tickUpdate, updates } = this;
         renderer.setAnimationLoop(() => {
             const delta = clock.getDelta();
             const self = world.self;
 
-            self.update(delta);
+            for (let i = 0, j = updates.length; i < j; i++) {
+                updates[i].update(delta);
+            }
 
             renderer.render(world, self.camera);
 
