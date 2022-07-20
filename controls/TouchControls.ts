@@ -1,12 +1,11 @@
 import Self from "../world/components/user/Self";
-import { Peers } from "../connection/Peer";
 import Controls from "./Controls";
 
 const _prevPos: number[] = [undefined, undefined];
 
 export default class TouchControls extends Controls {
-    constructor(self: Self, canvas: HTMLCanvasElement, peers: Peers) {
-        super(self, canvas, peers);
+    constructor(self: Self, canvas: HTMLCanvasElement) {
+        super(self, canvas);
 
         const scope = this;
 

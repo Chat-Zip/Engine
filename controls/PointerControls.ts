@@ -1,6 +1,5 @@
 import Self from "../world/components/user/Self";
 import Controls from "./Controls";
-import { Peers } from "../connection/Peer";
 
 interface Keys {
     move: Map<string, Function>;
@@ -17,8 +16,8 @@ export default class PointerControls extends Controls {
     public disconnect: Function;
     public isLocked: boolean;
 
-    constructor(self: Self, canvas: HTMLCanvasElement, peers: Peers) {
-        super(self, canvas, peers);
+    constructor(self: Self, canvas: HTMLCanvasElement) {
+        super(self, canvas);
         this.keys = {
             move: new Map(),
             ui: new Map(),

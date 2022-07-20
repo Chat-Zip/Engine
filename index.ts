@@ -23,14 +23,6 @@ export default class Engine {
         this.updates = [this.world.self];
     }
 
-    private tick() {
-        const { controls } = this;
-        if (controls === undefined) {
-            return;
-        }
-        controls.tick();
-    }
-
     public setControls(controls: Controls) {
         this.world.self.controls = controls;
     }
@@ -68,7 +60,7 @@ export default class Engine {
             if (!tickUpdate) return;
             duration += delta;
             if (duration < TICK) return;
-            this.tick();
+            self.tick();
             duration = 0;
         });
     }
