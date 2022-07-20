@@ -28,6 +28,20 @@ export interface SelfInterface {
     collision: CollisionRange;
 }
 
+const _prevMoveBuffer = new ArrayBuffer(12),
+    _currentMoveBuffer = new ArrayBuffer(12),
+    _prevMoveArray = new Float32Array(_prevMoveBuffer),
+    _currentMoveArray = new Float32Array(_currentMoveBuffer);
+
+function _isMove() {
+    for (let i = 0; i < 3; i++) {
+        if (_prevMoveArray[i] !== _currentMoveArray[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
 export default class Self implements SelfInterface {
     data: UserData;
     state: SelfState;
@@ -64,6 +78,18 @@ export default class Self implements SelfInterface {
         this.camera = new PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 256);
         this.collider = new Collider(this, world.map);
         this.gravity = new Gravity(this.state);
+    }
+
+    public tick() {
+        _prevMoveArray.set(_currentMoveArray);
+        _currentMoveArray.set(this.state.pos);
+
+        if (!_isMove()) return;
+
+        const peers = Array.from(this.peers.values());
+        for (let i = 0, j = peers.length; i < j; i++) {
+            peers[i].sendMovement(_currentMoveBuffer);
+        }
     }
 
     public update(delta: number) {
