@@ -144,6 +144,11 @@ export default class World extends Scene {
         });
     }
 
+    public update(delta: number) {
+        this.self.update(delta);
+        this.users.forEach((user: User) => user.update(delta));
+    }
+
     public async save(fileName: string) {
         if (this.data.spawnPoint[0] === undefined) {
             alert('맵의 스폰 위치를 설정해주세요!');
