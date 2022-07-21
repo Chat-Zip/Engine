@@ -4,6 +4,7 @@ import Skybox from "./components/Skybox";
 import Light from "./components/Light";
 import WorldMap from "./components/map";
 import Self from "./components/user/Self";
+import User from "./components/user/User";
 
 import SKYBOX_PX from "../assets/skybox/px.png";
 import SKYBOX_NX from "../assets/skybox/nx.png";
@@ -27,6 +28,7 @@ export default class World extends Scene {
     public light: Light;
     public map: WorldMap;
     public self: Self;
+    public users: Map<string, User>;
 
     constructor() {
         super();
@@ -113,6 +115,7 @@ export default class World extends Scene {
         this.light = new Light(this.data.intensity);
         this.map = new WorldMap(this);
         this.self = new Self(this);
+        this.users = new Map<string, User>();
 
         this.background = this.skybox.texture;
         this.add(this.light);
