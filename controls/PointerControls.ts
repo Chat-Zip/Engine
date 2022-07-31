@@ -12,8 +12,9 @@ const _unlockEvent = { type: 'unlock' };
 
 export default class PointerControls extends Controls {
     public keys: Keys;
-    public connect: Function;
-    public disconnect: Function;
+    public detectKeyEvents: (isDetect: boolean) => void;
+    public connect: () => void;
+    public disconnect: () => void;
     public isLocked: boolean;
 
     constructor(self: Self, canvas: HTMLCanvasElement) {
@@ -25,6 +26,7 @@ export default class PointerControls extends Controls {
         this.isLocked = false;
 
         const scope = this;
+        const ownerDocument = this.domElement.ownerDocument;
 
         function onMouseMove(e: MouseEvent) {
             if (!scope.isLocked) return;
@@ -71,20 +73,26 @@ export default class PointerControls extends Controls {
             console.error( 'Unable to use Pointer Lock API' );
         }
 
+        this.detectKeyEvents = (isDetect) => {
+            if (isDetect) {
+                ownerDocument.addEventListener('keydown', eventKeyDown);
+                ownerDocument.addEventListener('keyup', eventKeyUp);
+                return;
+            }
+            ownerDocument.removeEventListener('keydown', eventKeyDown);
+            ownerDocument.removeEventListener('keyup', eventKeyUp);
+        }
+
         this.connect = () => {
-            const ownerDocument = scope.domElement.ownerDocument;
             ownerDocument.addEventListener('mousemove', onMouseMove);
-            ownerDocument.addEventListener('keydown', eventKeyDown);
-            ownerDocument.addEventListener('keyup', eventKeyUp);
+            this.detectKeyEvents(true);
             ownerDocument.addEventListener('pointerlockchange', onPointerLockChange);
             ownerDocument.addEventListener('pointerlockerror', onPointerLockError);
         }
 
         this.disconnect = () => {
-            const ownerDocument = scope.domElement.ownerDocument;
             ownerDocument.removeEventListener('mousemove', onMouseMove);
-            ownerDocument.removeEventListener('keydown', eventKeyDown);
-            ownerDocument.removeEventListener('keyup', eventKeyUp);
+            this.detectKeyEvents(false);
             ownerDocument.removeEventListener('pointerlockchange', onPointerLockChange);
             ownerDocument.removeEventListener('pointerlockerror', onPointerLockError);
         }
