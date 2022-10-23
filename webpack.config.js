@@ -35,7 +35,7 @@ const testConfig = Object.assign({}, config, {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'test'),
     },
-    plugin: [
+    plugins: [
         new webpack.HotModuleReplacementPlugin(),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
