@@ -16,9 +16,25 @@ const config = {
                         presets: [
                             "@babel/env",
                             "@babel/preset-typescript",
-                        ]
+                        ],
+                        plugins: [
+                            "@babel/plugin-proposal-optional-chaining",
+                            "@babel/plugin-proposal-class-properties",
+                            ["@babel/plugin-proposal-decorators", {
+                                "decoratorsBeforeExport": true,
+                            }],
+                        ],
                     },
                 },
+            },
+            {
+                test: /\.(png|svg|jpg|gif|zip)$/,
+                use: {
+                    loader: "file-loader",
+                    options: {
+                        outputPath: "images",
+                    }
+                }
             },
         ],
     },
