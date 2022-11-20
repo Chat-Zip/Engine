@@ -10,7 +10,7 @@ let duration = 0;
 export default class Engine {
     public world: World;
     public controls: Controls;
-    public renderer: Renderer;
+    public renderer: Renderer | undefined;
 
     public tickUpdate: boolean;
 
@@ -22,6 +22,7 @@ export default class Engine {
     }
 
     public setControls(controls: Controls) {
+        this.controls = controls;
         this.world.self.controls = controls;
     }
 
@@ -32,7 +33,7 @@ export default class Engine {
         window.addEventListener('resize', () => {
             const width = window.innerWidth;
             const height = window.innerHeight;
-            this.renderer.setSize(width, height, false);
+            this.renderer?.setSize(width, height, false);
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
         });
@@ -61,6 +62,6 @@ export default class Engine {
     }
 
     public stop() {
-        this.renderer.setAnimationLoop(null);
+        this.renderer?.setAnimationLoop(null);
     }
 }
