@@ -65,6 +65,9 @@ export class ChatZipRenderer extends LitElement {
 
         _engine.start();
     }
+    protected createRenderRoot(): Element | ShadowRoot {
+        return this;
+    }
 }
 
 declare global {
