@@ -10,7 +10,7 @@ export class ChatZipRenderer extends LitElement {
     @query('#canvas') _canvas!: HTMLCanvasElement;
 
     static styles?: CSSResultGroup = css`
-        canvas {
+        #canvas {
             position: absolute;
             width: 100%;
             height: 100%;
