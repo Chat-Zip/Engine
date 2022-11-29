@@ -29,12 +29,18 @@ const config = {
             },
             {
                 test: /\.(png|svg|jpg|gif|zip)$/,
+                type: "asset/resource",
+                generator: {
+                    filename: "images/[hash][ext]",
+                }
+                /*
                 use: {
                     loader: "file-loader",
                     options: {
                         outputPath: "images",
                     }
                 }
+                */
             },
         ],
     },
