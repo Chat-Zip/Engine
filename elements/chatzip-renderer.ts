@@ -1,11 +1,10 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
-import Engine from '..';
+import engine from '..';
 import PointerControls from '../controls/PointerControls';
 
 @customElement('chatzip-renderer')
 export class ChatZipRenderer extends LitElement {
-    private _engine: Engine;
 
     @query('#canvas') _canvas!: HTMLCanvasElement;
 
@@ -21,7 +20,6 @@ export class ChatZipRenderer extends LitElement {
     constructor() {
         super();
         console.log('chatzip-renderer: created', this._canvas);
-        this._engine = new Engine();
     }
 
     connectedCallback(): void {
@@ -30,7 +28,7 @@ export class ChatZipRenderer extends LitElement {
     }
 
     disconnectedCallback(): void {
-        this._engine.stop();
+        engine.stop();
     }
 
     protected render() {
@@ -40,17 +38,17 @@ export class ChatZipRenderer extends LitElement {
     }
     protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
         console.log('chatzip-renderer: first updated', this._canvas);
-        const { _canvas, _engine } = this;
-        const pointerControls = new PointerControls(_engine.world.self, _canvas);
+        const { _canvas } = this;
+        const pointerControls = new PointerControls(engine.world.self, _canvas);
 
-        _engine.setCanvasToRenderer(_canvas);
-        _engine.setControls(pointerControls);
+        engine.setCanvasToRenderer(_canvas);
+        engine.setControls(pointerControls);
         _canvas.addEventListener('click', e => {
             pointerControls.lock();
             pointerControls.isLocked = true;
         });
 
-        const movements = _engine.controls.movements;
+        const movements = engine.controls.movements;
         const movKey = pointerControls.keys.move;
         movKey.set('KeyW', (isDown: boolean) => movements.set('forward', isDown));
         movKey.set('ArrowUp', (isDown: boolean) => movements.set('forward', isDown));
@@ -63,7 +61,7 @@ export class ChatZipRenderer extends LitElement {
         movKey.set('Space', (isDown: boolean) => movements.set('top', isDown));
         movKey.set('LeftShift', (isDown: boolean) => movements.set('down', isDown));
 
-        _engine.start();
+        engine.start();
     }
     protected createRenderRoot(): Element | ShadowRoot {
         return this;

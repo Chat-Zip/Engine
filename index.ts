@@ -7,7 +7,7 @@ const clock = new Clock();
 const TICK = 0.1;
 let duration = 0;
 
-export default class Engine {
+class Engine {
     public world: World;
     public controls: Controls;
     public renderer: Renderer | undefined;
@@ -65,3 +65,5 @@ export default class Engine {
         this.renderer?.setAnimationLoop(null);
     }
 }
+
+export default new Engine();
