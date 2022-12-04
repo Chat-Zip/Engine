@@ -4,5 +4,8 @@ import '../elements/chatzip-world-file-manager';
 
 import engine from '..';
 
-const self = engine.world.self;
+const world = engine.world;
+const self = world.self;
+
 self.gravity.isActive = false;
+world.applyGridHelper(true);
