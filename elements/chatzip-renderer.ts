@@ -59,7 +59,7 @@ export class ChatZipRenderer extends LitElement {
         movKey.set('KeyD', (isDown: boolean) => movements.set('right', isDown));
         movKey.set('ArrowRight', (isDown: boolean) => movements.set('right', isDown));
         movKey.set('Space', (isDown: boolean) => movements.set('top', isDown));
-        movKey.set('LeftShift', (isDown: boolean) => movements.set('down', isDown));
+        movKey.set('ShiftLeft', (isDown: boolean) => movements.set('down', isDown));
 
         engine.start();
     }
