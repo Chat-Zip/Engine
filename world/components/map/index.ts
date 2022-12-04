@@ -2,10 +2,10 @@ import * as THREE from "three";
 import World from "../..";
 import Palette from "./Palette";
 
-const CHUNK_SIZE = 32;
-const CHUNK_SIZE_BIT = 5;
-const CHUNK_SLICE_SIZE = 1024;
-const CHUNK_SLICE_SIZE_BIT = 10;
+export const CHUNK_SIZE = 32;
+export const CHUNK_SIZE_BIT = 5;
+export const CHUNK_SLICE_SIZE = 1024;
+export const CHUNK_SLICE_SIZE_BIT = 10;
 
 const NEIGHBOR_OFFSETS = [
     [0, 0, 0], // self
