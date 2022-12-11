@@ -1,5 +1,6 @@
 import Self from "../world/components/user/Self";
 import Controls from "./Controls";
+import eventKeyListeners from "./KeyEventListeners";
 
 interface Keys {
     move: Map<string, Function>;
@@ -36,30 +37,6 @@ export default class PointerControls extends Controls {
             scope.dispatchEvent(_changeEvent);
         }
 
-        function updateMovementFromKey(keyCode: string, isDown: boolean) {
-            const key = scope.keys.move;
-            if (!key.has(keyCode)) return;
-            key.get(keyCode)(isDown);
-        }
-
-        function eventKeyDown(e: KeyboardEvent) {
-            const { move, ui } = scope.keys;
-            const keyCode = e.code;
-            if (move.has(keyCode)) {
-                updateMovementFromKey(e.code, true);
-                return;
-            }
-            if (ui.has(keyCode)) {
-                ui.get(keyCode)();
-            }
-        }
-
-        function eventKeyUp(e: KeyboardEvent) {
-            const keyCode = e.code;
-            if (!scope.keys.move.get(keyCode)) return;
-            updateMovementFromKey(keyCode, false);
-        }
-
         function onPointerLockChange() {
             if (scope.domElement.ownerDocument.pointerLockElement === scope.domElement) {
                 scope.dispatchEvent(_lockEvent);
@@ -75,12 +52,10 @@ export default class PointerControls extends Controls {
 
         this.detectKeyEvents = (isDetect) => {
             if (isDetect) {
-                ownerDocument.addEventListener('keydown', eventKeyDown);
-                ownerDocument.addEventListener('keyup', eventKeyUp);
+                eventKeyListeners.active()
                 return;
             }
-            ownerDocument.removeEventListener('keydown', eventKeyDown);
-            ownerDocument.removeEventListener('keyup', eventKeyUp);
+            eventKeyListeners.inactive();
         }
 
         this.connect = () => {
