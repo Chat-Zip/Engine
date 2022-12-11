@@ -2,6 +2,7 @@ import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import engine from '..';
 import PointerControls from '../controls/PointerControls';
+import eventKeyListeners from "../controls/KeyEventListeners";
 
 @customElement('chatzip-renderer')
 export class ChatZipRenderer extends LitElement {
@@ -49,7 +50,7 @@ export class ChatZipRenderer extends LitElement {
         });
 
         const movements = engine.controls.movements;
-        const movKey = pointerControls.keys.move;
+        const movKey = eventKeyListeners.move;
         movKey.set('KeyW', (isDown: boolean) => movements.set('forward', isDown));
         movKey.set('ArrowUp', (isDown: boolean) => movements.set('forward', isDown));
         movKey.set('KeyS', (isDown: boolean) => movements.set('back', isDown));
