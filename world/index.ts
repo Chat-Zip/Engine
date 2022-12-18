@@ -2,7 +2,7 @@ import { Scene, GridHelper } from "three";
 import JSZip from "jszip";
 import Skybox from "./components/Skybox";
 import Light from "./components/Light";
-import WorldMap, { CHUNK_SIZE } from "./components/map";
+import WorldMap from "./components/map";
 import Self from "./components/user/Self";
 import User from "./components/user/User";
 
@@ -14,8 +14,6 @@ import SKYBOX_PZ from "../assets/skybox/pz.png";
 import SKYBOX_NZ from "../assets/skybox/nz.png";
 
 const CONVERSION = 128;
-
-const gridHelper = new GridHelper(CHUNK_SIZE, CHUNK_SIZE);
 
 export interface WorldData {
     skybox: Array<string>;
@@ -144,14 +142,6 @@ export default class World extends Scene {
             }
             resolve(JSON.parse(data));
         });
-    }
-
-    public applyGridHelper(apply: Boolean) {
-        if (apply) {
-            this.add(gridHelper);
-            return;
-        }
-        this.remove(gridHelper);
     }
 
     public update(delta: number) {
