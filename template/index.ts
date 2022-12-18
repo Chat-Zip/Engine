@@ -9,4 +9,4 @@ const world = engine.world;
 const self = world.self;
 
 self.gravity.isActive = false;
-world.applyGridHelper(true);
+world.map.applyGridHelper(true);

@@ -2,10 +2,10 @@ import * as THREE from "three";
 import World from "../..";
 import Palette from "./Palette";
 
-export const CHUNK_SIZE = 32;
-export const CHUNK_SIZE_BIT = 5;
-export const CHUNK_SLICE_SIZE = 1024;
-export const CHUNK_SLICE_SIZE_BIT = 10;
+const CHUNK_SIZE = 32;
+const CHUNK_SIZE_BIT = 5;
+const CHUNK_SLICE_SIZE = 1024;
+const CHUNK_SLICE_SIZE_BIT = 10;
 
 const NEIGHBOR_OFFSETS = [
     [0, 0, 0], // self
@@ -74,6 +74,7 @@ const FACES = [
 ]
 
 const _material = new THREE.MeshLambertMaterial({vertexColors: true});
+const _gridHelper = new THREE.GridHelper(CHUNK_SIZE, CHUNK_SIZE);
 
 export default class WorldMap {
     private world: World;
@@ -86,6 +87,14 @@ export default class WorldMap {
         this.chunks = new Map();
         this.meshs = new Map();
         this.palette = new Palette(world.data.paletteColors);
+    }
+
+    public applyGridHelper(apply: Boolean) {
+        if (apply) {
+            this.world.add(_gridHelper);
+            return;
+        }
+        this.world.remove(_gridHelper);
     }
 
     public computeChunkId(x: number, y: number, z: number) {
