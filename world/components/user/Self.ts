@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Raycaster } from "three";
+import { Intersection, Object3D, PerspectiveCamera, Raycaster } from "three";
 import { UserData } from "./User";
 import Peer, { Peers } from "../../../connection/Peer";
 import Controls from "../../../controls/Controls";
@@ -80,6 +80,12 @@ export default class Self implements SelfInterface {
         this.raycaster = new Raycaster();
         this.collider = new Collider(this, world.map);
         this.gravity = new Gravity(this.state);
+    }
+
+    public getRaycasterIntersect(targetObjects: Array<Object3D>): Intersection {
+        const { camera, raycaster } = this;
+        raycaster.setFromCamera({x: 0, y: 0}, camera);
+        return raycaster.intersectObjects(targetObjects, false)[0];
     }
 
     public tick() {
