@@ -246,6 +246,7 @@ export default class WorldMap {
         const {chunks, meshs} = this;
         chunks.forEach((_, chunkId) => {
             const chunkMesh = meshs.get(chunkId);
+            if (!chunkMesh) return;
             this.world.remove(chunkMesh);
             chunkMesh.geometry.dispose();
             meshs.delete(chunkId);
