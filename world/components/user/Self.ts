@@ -48,7 +48,7 @@ export default class Self implements SelfInterface {
     collision: CollisionRange;
 
     peers: Peers;
-    controls: Controls;
+    controls: Controls | undefined;
     camera: PerspectiveCamera;
     raycaster: Raycaster;
     collider: Collider;
