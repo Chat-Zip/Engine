@@ -51,7 +51,11 @@ export class Engine {
             controls.addEventListener('unlock', () => {
                 renderer?.domElement.removeEventListener('pointerdown', world.editor.placeVoxel);
                 controls.removeEventListener('change', world.editor.selectVoxel);
-            })
+            });
+        }
+        else {
+            renderer?.domElement.removeEventListener('pointerdown', world.editor.placeVoxel);
+            controls.removeEventListener('change', world.editor.selectVoxel);
         }
     }
 
