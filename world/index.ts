@@ -1,11 +1,11 @@
 import { Scene, GridHelper } from "three";
 import JSZip from "jszip";
-import Editor from "./Editor";
 import Skybox from "./components/Skybox";
 import Light from "./components/Light";
 import WorldMap from "./components/map";
 import Self from "./components/user/Self";
 import User from "./components/user/User";
+import Editor from "./Editor";
 
 import SKYBOX_PX from "../assets/skybox/px.png";
 import SKYBOX_NX from "../assets/skybox/nx.png";
@@ -34,7 +34,6 @@ export default class World extends Scene {
 
     constructor() {
         super();
-        this.editor = new Editor(this);
         this.data = {
             skybox: [
                 SKYBOX_PX,
@@ -122,6 +121,8 @@ export default class World extends Scene {
 
         this.background = this.skybox.texture;
         this.add(this.light);
+
+        this.editor = new Editor(this);
     }
 
     private exportWorldData(): Promise<Uint8Array> {
