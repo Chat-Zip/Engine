@@ -8,6 +8,7 @@ import eventKeyListeners from "../controls/KeyEventListeners";
 export class ChatZipRenderer extends LitElement {
 
     @query('#canvas') _canvas!: HTMLCanvasElement;
+    @property({type: Boolean, attribute: 'enable-editor'}) enableEditor: Boolean = false;
 
     static styles?: CSSResultGroup = css`
         #canvas {
@@ -62,6 +63,7 @@ export class ChatZipRenderer extends LitElement {
         movKey.set('Space', (isDown: boolean) => movements.set('top', isDown));
         movKey.set('ShiftLeft', (isDown: boolean) => movements.set('down', isDown));
 
+        if (this.enableEditor) engine.enableEditor(true);
         engine.start();
     }
     protected createRenderRoot(): Element | ShadowRoot {
