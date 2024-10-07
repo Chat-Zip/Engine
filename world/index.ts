@@ -1,5 +1,6 @@
 import { Scene, GridHelper } from "three";
 import JSZip from "jszip";
+import Editor from "./Editor";
 import Skybox from "./components/Skybox";
 import Light from "./components/Light";
 import WorldMap from "./components/map";
@@ -23,6 +24,7 @@ export interface WorldData {
 }
 
 export default class World extends Scene {
+    public editor: Editor;
     public data: WorldData;
     public skybox: Skybox;
     public light: Light;
@@ -32,6 +34,7 @@ export default class World extends Scene {
 
     constructor() {
         super();
+        this.editor = new Editor(this);
         this.data = {
             skybox: [
                 SKYBOX_PX,
