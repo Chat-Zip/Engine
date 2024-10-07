@@ -74,27 +74,29 @@ const FACES = [
 ]
 
 const _material = new THREE.MeshLambertMaterial({vertexColors: true});
-const _gridHelper = new THREE.GridHelper(CHUNK_SIZE, CHUNK_SIZE);
 
 export default class WorldMap {
     private world: World;
     public chunks: Map<string, Uint8Array>;
     public meshs: Map<string, THREE.Mesh>;
+    public gridHelper: THREE.GridHelper;
     public palette: Palette;
 
     constructor(world: World) {
         this.world = world;
         this.chunks = new Map();
         this.meshs = new Map();
+        this.gridHelper = new THREE.GridHelper(CHUNK_SIZE, CHUNK_SIZE);
         this.palette = new Palette(world.data.paletteColors);
     }
 
     public applyGridHelper(apply: Boolean) {
+        const { world, gridHelper } = this;
         if (apply) {
-            this.world.add(_gridHelper);
+            world.add(gridHelper);
             return;
         }
-        this.world.remove(_gridHelper);
+        world.remove(gridHelper);
     }
 
     public computeChunkId(x: number, y: number, z: number) {
