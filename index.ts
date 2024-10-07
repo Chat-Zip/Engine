@@ -42,7 +42,10 @@ export class Engine {
 
     public enableEditor(enable: boolean) {
         const { world, controls, renderer } = this;
-        if (!(controls instanceof PointerControls)) return;
+        if (!(controls instanceof PointerControls)) {
+            console.error('Only PointerControls can use editor mode.');
+            return;
+        }
         if (enable) {
             controls?.addEventListener('lock', () => {
                 renderer?.domElement.addEventListener('pointerdown', world.editor.placeVoxel);
