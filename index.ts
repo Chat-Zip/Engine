@@ -3,6 +3,8 @@ import World from "./world";
 import Controls from "./controls/Controls";
 import Renderer from "./Renderer";
 import PointerControls from "./controls/PointerControls";
+import eventKeyListeners from "./controls/KeyEventListeners";
+import TouchControls from "./controls/TouchControls";
 
 const clock = new Clock();
 const TICK = 0.1;
@@ -22,11 +24,6 @@ export class Engine {
         this.tickUpdate = true;
     }
 
-    public setControls(controls: Controls) {
-        this.controls = controls;
-        this.world.self.controls = controls;
-    }
-
     public setCanvasToRenderer(canvas: HTMLCanvasElement) {
         const camera = this.world.self.camera;
         this.renderer = new Renderer(canvas);
@@ -38,6 +35,43 @@ export class Engine {
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
         });
+    }
+
+    public setControls(controls: 'pointer' | 'touch') {
+        const { world, renderer } = this;
+        if (!renderer) {
+            console.error('You must call setCanvasToRednerer() before use this function.');
+            return;
+        }
+        switch (controls) {
+            case 'pointer':
+                const pointerControls = new PointerControls(world.self, renderer.domElement);
+                this.controls = pointerControls;
+                this.world.self.controls = pointerControls;
+                renderer.domElement.addEventListener('click', e => {
+                    pointerControls.lock();
+                    pointerControls.isLocked = true;
+                });
+                const movements = this.controls.movements;
+                const movKey = eventKeyListeners.move;
+                movKey.set('KeyW', (isDown: boolean) => movements.set('forward', isDown));
+                movKey.set('ArrowUp', (isDown: boolean) => movements.set('forward', isDown));
+                movKey.set('KeyS', (isDown: boolean) => movements.set('back', isDown));
+                movKey.set('ArrowDown', (isDown: boolean) => movements.set('back', isDown));
+                movKey.set('KeyA', (isDown: boolean) => movements.set('left', isDown));
+                movKey.set('ArrowLeft', (isDown: boolean) => movements.set('left', isDown));
+                movKey.set('KeyD', (isDown: boolean) => movements.set('right', isDown));
+                movKey.set('ArrowRight', (isDown: boolean) => movements.set('right', isDown));
+                movKey.set('Space', (isDown: boolean) => movements.set('top', isDown));
+                movKey.set('ShiftLeft', (isDown: boolean) => movements.set('down', isDown));
+                break;
+            case 'touch':
+                const touchControls = new TouchControls(world.self, renderer.domElement);
+                this.controls = touchControls
+                this.world.self.controls = touchControls;
+                break;
+        }
+        
     }
 
     public enableEditor(enable: boolean) {
