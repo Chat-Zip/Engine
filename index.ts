@@ -25,16 +25,19 @@ export class Engine {
     }
 
     public setCanvasToRenderer(canvas: HTMLCanvasElement) {
-        const camera = this.world.self.camera;
         this.renderer = new Renderer(canvas);
+        // new ResizeObserver(entries => {
+        //     const {width, height} = entries[0].contentRect;
+        //     this.renderer?.setSize(width, height);
+        // }).observe(this.renderer.domElement);
 
-        window.addEventListener('resize', () => {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            this.renderer?.setSize(width, height, false);
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-        });
+        // window.addEventListener('resize', () => {
+        //     const width = window.innerWidth;
+        //     const height = window.innerHeight;
+        //     this.renderer?.setSize(width, height, false);
+        //     camera.aspect = width / height;
+        //     camera.updateProjectionMatrix();
+        // });
     }
 
     public setControls(controls: 'pointer' | 'touch') {
