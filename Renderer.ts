@@ -1,8 +1,18 @@
 import { WebGLRenderer } from 'three';
+import engine from '.';
 
 export default class Renderer extends WebGLRenderer {
+
+    private camera;
+
     constructor(canvas: HTMLCanvasElement) {
-        super({canvas})
-        this.setSize(window.innerWidth, window.innerHeight, false);
+        super({canvas});
+        this.camera = engine.world.self.camera;
+    }
+    
+    public setSize(width: number, height: number, updateStyle?: boolean) {
+        super.setSize(width, height, updateStyle);
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
     }
 }
