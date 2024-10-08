@@ -11,13 +11,14 @@ export class ChatZipCrossHair extends LitElement {
     static styles?: CSSResultGroup = css`
         #crosshair {
             position: absolute;
+            display: inline-block;
             width: 1em;
             height: 1em;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 1;
-        }
+        }        
     `;
 
     constructor() {
