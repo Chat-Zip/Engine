@@ -11,8 +11,15 @@ export class ChatZipRenderer extends LitElement {
 
     @query('#render-frame') _render_frame!: HTMLDivElement;
     @query('#canvas') _canvas!: HTMLCanvasElement;
+
     @property({ type: Boolean, attribute: 'enable-editor' }) enableEditor: Boolean = false;
     @property({ type: String, attribute: 'controls' }) controls: String = 'pointer';
+
+    @property({ type: String, attribute: 'render-frame-style'}) renderFrameStyle = css`
+        width: 960px;
+        height: 540px;
+    `;
+    @property({ type: String, attribute: 'canvas-style'}) canvasStyle = css``;
 
     constructor() {
         super();
@@ -25,6 +32,7 @@ export class ChatZipRenderer extends LitElement {
     }
 
     disconnectedCallback(): void {
+        console.log('chatzip-renderer: removed DOM', this._canvas);
         engine.stop();
     }
 
@@ -32,11 +40,11 @@ export class ChatZipRenderer extends LitElement {
         return html`
             <style>
                 #render-frame {
+                    ${this.renderFrameStyle}
                     position: relative;
-                    width: 960px;
-                    height: 540px;
                 }
                 #canvas {
+                    ${this.canvasStyle}
                     position: absolute;
                     z-index: 0;
                 }
