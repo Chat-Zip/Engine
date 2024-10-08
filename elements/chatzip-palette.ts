@@ -12,27 +12,29 @@ export class ChatZipPalette extends LitElement {
 
     static styles?: CSSResultGroup = css`
         #palette {
+            font-family: sans-serif;
             position: absolute;
-            left: 0;
-            top: 0;
-            margin-top: 1em;
+            display: inline-block;
+            left: 1rem;
+            top: 2rem;
             z-index: 1;
         }
         .palette-list {
-            color: #ffffffaa;
-            padding: 1em;
+            color: #ffffff77;
+            font-weight: bold;
+            -webkit-text-stroke: 1px black;
+            text-stroke: 1px black;
+            border-radius: 32px;
+            padding: 8px;
             font-size: larger;
-            text-shadow: -1px 0 #000000aa, 0 1px #000000aa, 1px 0 #000000aa, 0 -1px #000000aa;
             border-style: none;
-            border-color: #ffffffaa;
+            border-color: #fffffff0;
         }
         #eraser {
             color: #ff0000aa;
-            padding: 1em;
-            font-size: larger;
-            text-shadow: -1px 0 #000000aa, 0 1px #000000aa, 1px 0 #000000aa, 0 -1px #000000aa;
             border-style: solid;
             border-color: #000000aa;
+            border-width: 2px;
         }
         #color-board {
             display: none;
@@ -61,7 +63,7 @@ export class ChatZipPalette extends LitElement {
                 <span class="palette-list">6</span>
                 <span class="palette-list">7</span>
                 <span class="palette-list">8</span>
-                <span id="eraser">X</span>
+                <span class="palette-list" id="eraser">X</span>
                 <div id="color-board"></div>
             </div>
         `;
@@ -80,8 +82,9 @@ export class ChatZipPalette extends LitElement {
             if (index === -1) {
                 if (palette.selected === -1) return;
                 this._eraser.style.textShadow = '-1px 0 #ffffffaa, 0 1px #ffffffaa, 1px 0 #ffffffaa, 0 -1px #ffffffaa';
-                this._eraser.style.borderColor = '#ffffffaa';
+                this._eraser.style.borderColor = '#fffffff0';
                 _list[palette.selected].style.border = 'none';
+                _list[palette.selected].style.color = '#ffffff77';
             }
             else {
                 if (palette.selected === -1) {
@@ -90,8 +93,10 @@ export class ChatZipPalette extends LitElement {
                 }
                 else {
                     _list[palette.selected].style.border = 'none';
+                    _list[palette.selected].style.color = '#ffffff77';
                 }
                 _list[index].style.border = 'solid';
+                _list[index].style.color = '#ffffff';
             }
             palette.selected = index;
         }
@@ -109,6 +114,7 @@ export class ChatZipPalette extends LitElement {
             const colorItem = this._list[i];
             colorItem.style.background = palette.colors[palette.list[i]];
             colorItem.addEventListener('click', () => {
+                selectColor(i);
                 palette.selected = i;
                 this._colorBoard.style.display = 'block';
             });
