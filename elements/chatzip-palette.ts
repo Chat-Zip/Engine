@@ -24,11 +24,14 @@ export class ChatZipPalette extends LitElement {
             font-weight: bold;
             -webkit-text-stroke: 1px black;
             text-stroke: 1px black;
+            text-align: center;
             border-radius: 32px;
-            padding: 8px;
             font-size: larger;
             border-style: none;
             border-color: #fffffff0;
+            display: inline-block;
+            width: 32px;
+            height: 32px;
         }
         #eraser {
             color: #ff0000aa;
