@@ -7,15 +7,18 @@
     <title>Engine test</title>
 </head>
 <body>
-    <chatzip-renderer enable-editor controls="pointer">
-        <chatzip-crosshair></chatzip-crosshair>
-        <chatzip-palette></chatzip-palette>
-        <chatzip-world-file-manager></chatzip-world-file-manager>
-    </chatzip-renderer>
+    <div id="frame">
+        <chatzip-renderer enable-editor controls="pointer">
+        </chatzip-renderer>
+    </div>
 </body>
 <style>
     body {
         margin: 0;
+    }
+    #frame {
+        width: max-content;
+        margin: auto;
     }
 </style>
 </html>
