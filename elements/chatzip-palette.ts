@@ -6,9 +6,10 @@ import eventKeyListeners from '../controls/KeyEventListeners';
 @customElement('chatzip-palette')
 export class ChatZipPalette extends LitElement {
 
+    private _colorBoard: HTMLDivElement;
+    @query('#palette') _palette!: HTMLDivElement;
     @queryAll('.palette-list') _list!: HTMLCollectionOf<HTMLSpanElement>;
     @query('#eraser') _eraser!: HTMLSpanElement;
-    @query('#color-board') _colorBoard!: HTMLDivElement;
 
     static styles?: CSSResultGroup = css`
         #palette {
@@ -41,18 +42,22 @@ export class ChatZipPalette extends LitElement {
         }
         #color-board {
             display: none;
-            margin-top: 2em;
+            margin-top: 32px;
             line-height: 0%;
+            grid-template-columns: repeat(8, 32px);
+            grid-template-rows: repeat(8, 32px);
         }
         #color-board span {
             display: inline-block;
-            width: 2em;
-            height: 2em;
+            // width: 2em;
+            // height: 2em;
         }
     `;
 
     constructor() {
         super();
+        this._colorBoard = document.createElement('div') as HTMLDivElement;
+        this._colorBoard.id = 'color-board';
     }
 
     protected render() {
@@ -67,9 +72,24 @@ export class ChatZipPalette extends LitElement {
                 <span class="palette-list">7</span>
                 <span class="palette-list">8</span>
                 <span class="palette-list" id="eraser">X</span>
-                <div id="color-board"></div>
             </div>
         `;
+    }
+
+    connectedCallback(): void {
+        super.connectedCallback();
+        const palette = engine.world.map.palette;
+        for (let i = 1; i < 65 ; i++) {
+            const color = document.createElement('span') as HTMLSpanElement;
+            color.style.backgroundColor = palette.colors[i];
+            color.addEventListener('click', () => {
+                palette.list[palette.selected] = i;
+                this._list[palette.selected].style.backgroundColor = palette.colors[i];
+                this._colorBoard.style.display = 'none';
+            });
+            this._colorBoard.appendChild(color);
+            // if (i % 8 === 0) this._colorBoard.appendChild(document.createElement('br'));
+        }
     }
 
     protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -113,26 +133,15 @@ export class ChatZipPalette extends LitElement {
         uiKey.set('Digit8', () => selectColor(7));
         uiKey.set('KeyX', () => selectColor(-1));
 
+        this._palette.appendChild(this._colorBoard);
         for (let i = 0, j = this._list.length; i < j; i++) {
             const colorItem = this._list[i];
             colorItem.style.background = palette.colors[palette.list[i]];
             colorItem.addEventListener('click', () => {
                 selectColor(i);
                 palette.selected = i;
-                this._colorBoard.style.display = 'block';
+                this._colorBoard.style.display = 'grid';
             });
-        }
-
-        for (let i = 1; i < 65 ; i++) {
-            const color = document.createElement('span') as HTMLSpanElement;
-            color.style.backgroundColor = palette.colors[i];
-            color.addEventListener('click', () => {
-                palette.list[palette.selected] = i;
-                this._list[palette.selected].style.backgroundColor = palette.colors[i];
-                this._colorBoard.style.display = 'none';
-            });
-            this._colorBoard.appendChild(color);
-            if (i % 8 === 0) this._colorBoard.appendChild(document.createElement('br'));
         }
     }
 }
