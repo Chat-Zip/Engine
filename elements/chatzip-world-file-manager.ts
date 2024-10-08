@@ -12,10 +12,11 @@ export class ChatZipWorldFileManager extends LitElement {
     static styles?: CSSResultGroup = css`
         #file-manager {
             position: absolute;
+            display: inline-block;
             top: 0;
             right: 0;
             z-index: 1;
-        }
+        }        
     `;
 
     constructor() {
@@ -54,9 +55,9 @@ export class ChatZipWorldFileManager extends LitElement {
             world.load(file).then(() => {
                 const spawnPoint = world.data.spawnPoint;
                 const selfPos = world.self.state.pos;
-                selfPos[0] = spawnPoint[0];
-                selfPos[1] = spawnPoint[1];
-                selfPos[2] = spawnPoint[2];
+                selfPos[0] = spawnPoint[0] ? spawnPoint[0] : 0;
+                selfPos[1] = spawnPoint[1] ? spawnPoint[1] : 1;
+                selfPos[2] = spawnPoint[2] ? spawnPoint[2] : 2;
             });
         });
     }
