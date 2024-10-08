@@ -49,6 +49,13 @@ const config = {
             '.ts', '.js',
         ],
     },
+    devServer: {
+        static: {
+            directory: path.join(__dirname, "./template"),
+        },
+        compress: true,
+        port: 3000,
+    }
 }
 
 const testConfig = Object.assign({}, config, {
