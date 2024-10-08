@@ -2,7 +2,7 @@
   "name": "engine",
   "version": "0.1.0",
   "scripts": {
-    "dev": "npx webpack serve",
+    "dev": "webpack-dev-server",
     "build": "npx webpack"
   },
   "dependencies": {

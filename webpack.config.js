@@ -54,7 +54,7 @@ const config = {
             directory: path.join(__dirname, "./template"),
         },
         compress: true,
-        port: 3000,
+        port: process.env.PORT,
     }
 }
 
