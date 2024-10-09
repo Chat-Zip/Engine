@@ -19,7 +19,7 @@ export class ChatZipPalette extends LitElement {
             position: absolute;
             display: inline-block;
             left: 1rem;
-            top: 2rem;
+            top: 1rem;
             z-index: 1;
         }
         .palette-list {
@@ -33,6 +33,7 @@ export class ChatZipPalette extends LitElement {
             border-style: none;
             border-color: #fffffff0;
             display: inline-block;
+            cursor: pointer;
             width: 32px;
             height: 32px;
         }
@@ -62,20 +63,102 @@ export class ChatZipPalette extends LitElement {
         }
         #color-board span {
             display: inline-block;
+            cursor: pointer;
             // width: 2em;
             // height: 2em;
         }
     `;
 
+    private selectColor(index: number) {
+        const palette = engine.world.map.palette;
+        const { _list } = this;
+        // index : -1 => eraser / 0 ~ 7 -> list
+        if (index < -1 || index > 7) {
+            console.error('Out of index');
+            return;
+        }
+        if (index === -1) {
+            if (palette.selected === -1) return;
+            this._eraser.style.textShadow = '-1px 0 #ffffffaa, 0 1px #ffffffaa, 1px 0 #ffffffaa, 0 -1px #ffffffaa';
+            this._eraser.style.borderColor = '#fffffff0';
+            _list[palette.selected].style.border = 'none';
+            _list[palette.selected].style.color = '#ffffff77';
+        }
+        else {
+            if (palette.selected === -1) {
+                this._eraser.style.textShadow = '-1px 0 #000000aa, 0 1px #000000aa, 1px 0 #000000aa, 0 -1px #000000aa';
+                this._eraser.style.borderColor = '#000000aa';
+            }
+            else {
+                _list[palette.selected].style.border = 'none';
+                _list[palette.selected].style.color = '#ffffff77';
+            }
+            _list[index].style.border = 'solid';
+            _list[index].style.color = '#ffffff';
+        }
+        palette.selected = index;
+    }
+
+    private selectBrush(brush: 'voxel' | 'block') {
+        const editor = engine.world.editor;
+        switch(brush) {
+            case 'voxel':
+                this._brush_voxel.style.background = "#ffffffc0";
+                this._brush_block.style.background = "#ffffff40";
+                this._brush_voxel.style.border = "solid";
+                this._brush_block.style.border = "none";
+                break;
+            case 'block':
+                this._brush_voxel.style.background = "#ffffff40";
+                this._brush_block.style.background = "#ffffffc0";
+                this._brush_voxel.style.border = "none";
+                this._brush_block.style.border = "solid";
+                break;
+        }
+        editor.setBrush(brush);
+    }
+
     constructor() {
         super();
         this._colorBoard = document.createElement('div') as HTMLDivElement;
         this._colorBoard.id = 'color-board';
+        const uiKey = eventKeyListeners.ui;
+        uiKey.set('Digit1', () => this.selectColor(0));
+        uiKey.set('Digit2', () => this.selectColor(1));
+        uiKey.set('Digit3', () => this.selectColor(2));
+        uiKey.set('Digit4', () => this.selectColor(3));
+        uiKey.set('Digit5', () => this.selectColor(4));
+        uiKey.set('Digit6', () => this.selectColor(5));
+        uiKey.set('Digit7', () => this.selectColor(6));
+        uiKey.set('Digit8', () => this.selectColor(7));
+        uiKey.set('KeyX', () => this.selectColor(-1));
+        uiKey.set('KeyV', () => this.selectBrush('voxel'));
+        uiKey.set('KeyB', () => this.selectBrush('block'));
+        
+    }
+
+    protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
         const palette = engine.world.map.palette;
+
+        for (let i = 0, j = this._list.length; i < j; i++) {
+            const colorItem = this._list[i];
+            colorItem.style.background = palette.colors[palette.list[i]];
+            colorItem.addEventListener('click', () => {
+                if (colorItem.id === 'eraser') {
+                    this.selectColor(-1);
+                    return;
+                }
+                this.selectColor(i);
+                // palette.selected = i;
+                this._colorBoard.style.display = 'grid';
+            });
+        }
+        
         for (let i = 1; i < 65 ; i++) {
             const color = document.createElement('span') as HTMLSpanElement;
             color.style.backgroundColor = palette.colors[i];
             color.addEventListener('click', () => {
+                if (palette.selected === -1) return;
                 palette.list[palette.selected] = i;
                 this._list[palette.selected].style.backgroundColor = palette.colors[i];
                 this._colorBoard.style.display = 'none';
@@ -83,6 +166,8 @@ export class ChatZipPalette extends LitElement {
             this._colorBoard.appendChild(color);
             // if (i % 8 === 0) this._colorBoard.appendChild(document.createElement('br'));
         }
+        this._palette.appendChild(this._colorBoard);
+        this.selectBrush('voxel');
     }
 
     protected render() {
@@ -103,83 +188,5 @@ export class ChatZipPalette extends LitElement {
                 </div>
             </div>
         `;
-    }
-
-    protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-        const palette = engine.world.map.palette;
-        const editor = engine.world.editor;
-        const uiKey = eventKeyListeners.ui;
-        
-        const selectColor = (index: number) => {
-            const { _list } = this;
-            // index : -1 => eraser / 0 ~ 7 -> list
-            if (index < -1 || index > 7) {
-                console.error('Out of index');
-                return;
-            }
-            if (index === -1) {
-                if (palette.selected === -1) return;
-                this._eraser.style.textShadow = '-1px 0 #ffffffaa, 0 1px #ffffffaa, 1px 0 #ffffffaa, 0 -1px #ffffffaa';
-                this._eraser.style.borderColor = '#fffffff0';
-                _list[palette.selected].style.border = 'none';
-                _list[palette.selected].style.color = '#ffffff77';
-            }
-            else {
-                if (palette.selected === -1) {
-                    this._eraser.style.textShadow = '-1px 0 #000000aa, 0 1px #000000aa, 1px 0 #000000aa, 0 -1px #000000aa';
-                    this._eraser.style.borderColor = '#000000aa';
-                }
-                else {
-                    _list[palette.selected].style.border = 'none';
-                    _list[palette.selected].style.color = '#ffffff77';
-                }
-                _list[index].style.border = 'solid';
-                _list[index].style.color = '#ffffff';
-            }
-            palette.selected = index;
-        }
-
-        const selectBrush = (brush: 'voxel' | 'block') => {
-            switch(brush) {
-                case 'voxel':
-                    this._brush_voxel.style.background = "#ffffffc0";
-                    this._brush_block.style.background = "#ffffff40";
-                    this._brush_voxel.style.border = "solid";
-                    this._brush_block.style.border = "none";
-                    break;
-                case 'block':
-                    this._brush_voxel.style.background = "#ffffff40";
-                    this._brush_block.style.background = "#ffffffc0";
-                    this._brush_voxel.style.border = "none";
-                    this._brush_block.style.border = "solid";
-                    break;
-            }
-            editor.setBrush(brush);
-        }
-
-        uiKey.set('Digit1', () => selectColor(0));
-        uiKey.set('Digit2', () => selectColor(1));
-        uiKey.set('Digit3', () => selectColor(2));
-        uiKey.set('Digit4', () => selectColor(3));
-        uiKey.set('Digit5', () => selectColor(4));
-        uiKey.set('Digit6', () => selectColor(5));
-        uiKey.set('Digit7', () => selectColor(6));
-        uiKey.set('Digit8', () => selectColor(7));
-        uiKey.set('KeyX', () => selectColor(-1));
-        uiKey.set('KeyV', () => selectBrush('voxel'));
-        uiKey.set('KeyB', () => selectBrush('block'));
-
-        this._palette.appendChild(this._colorBoard);
-        for (let i = 0, j = this._list.length; i < j; i++) {
-            const colorItem = this._list[i];
-            colorItem.style.background = palette.colors[palette.list[i]];
-            colorItem.addEventListener('click', () => {
-                selectColor(i);
-                palette.selected = i;
-                this._colorBoard.style.display = 'grid';
-            });
-        }
-
-        selectBrush('voxel');
     }
 }
