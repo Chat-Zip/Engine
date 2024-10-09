@@ -8,21 +8,42 @@ import PointerControls from "../controls/PointerControls";
 export class ChatZipMenu extends LitElement {
 
     @query('#menu') _menu?: HTMLDivElement;
+    @query('#close') _close?: HTMLDivElement;
+    @query('#open') _open?: HTMLDivElement;
 
     private isOpen;
 
     static styles: CSSResultGroup = css`
         #menu {
             position: absolute;
-            display: none;
-            background: #00000080;
+            top: 0;
             right: 0;
-            margin: 1rem;
-            padding: 8px;
+            margin: 16px;
+            color: #ffffff;
+            overflow-y: auto;
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
             border-radius: 16px;
             z-index: 1;
         }
+        #close {
+            background: #00000060;
+            padding: 8px;
+            // border-radius: 16px;
+        }
+        #open {
+            display: none;
+            background: #00000080;
+            padding: 8px;
+        }
     `;
+
+    private showMenuUI(show: boolean) {
+        if (!this._menu || !this._close || !this._open) return;
+        this.isOpen = show;
+        this._close.style.display = show ? 'none' : 'block';
+        this._open.style.display = show ? 'block' : 'none';
+    }
 
     constructor() {
         super();
@@ -36,26 +57,31 @@ export class ChatZipMenu extends LitElement {
             const pointerControls = engine.controls as PointerControls;
 
             pointerControls.addEventListener('lock', () => {
-                this.isOpen = false;
-                if (!this._menu) return;
-                this._menu.style.display = 'none';
+                this.showMenuUI(false);
             })
 
             eventKeyListeners.ui.set('KeyM', () => {
-                if (!this._menu) return;
-                this.isOpen = !this.isOpen;
-                this._menu.style.display = this.isOpen ? 'unset' : 'none';
+                this.showMenuUI(!this.isOpen);
                 if (this.isOpen) {
                     pointerControls.unlock();
                 }
             });
         }
+
+        engine.addEventListener('resize-render-frame', (e) => {
+            if (!this._menu) return;
+            const { height } = e.contentRect;
+            this._menu.style.maxHeight = `${height - 32}px`;
+        });
     }
 
     protected render() {
         return html`
             <div id="menu">
-                <slot></slot>
+                <div id="close">MENU(M)</div>
+                <div id="open">
+                    <slot></slot>
+                </div>
             </div>
         `;
     }
