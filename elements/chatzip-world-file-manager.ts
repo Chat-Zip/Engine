@@ -11,12 +11,9 @@ export class ChatZipWorldFileManager extends LitElement {
 
     static styles?: CSSResultGroup = css`
         #file-manager {
-            position: absolute;
-            display: inline-block;
-            top: 0;
-            right: 0;
-            z-index: 1;
-        }        
+            display: flex;
+            flex-direction: column;
+        }
     `;
 
     constructor() {
