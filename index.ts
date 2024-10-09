@@ -16,16 +16,22 @@ export class Engine {
     public renderer: Renderer | undefined;
 
     public tickUpdate: boolean;
+    public fullScreenMode: boolean;
+
+    public renderFrameElement: HTMLElement | undefined;
 
     constructor() {
         this.world = new World();
         this.controls = undefined;
         this.renderer = undefined;
         this.tickUpdate = true;
+        this.fullScreenMode = false;
+        this.renderFrameElement = undefined;
     }
 
-    public setCanvasToRenderer(canvas: HTMLCanvasElement) {
+    public setRenderer(renderFrameElement: HTMLElement, canvas: HTMLCanvasElement) {
         this.renderer = new Renderer(canvas);
+        this.renderFrameElement = renderFrameElement;
         // new ResizeObserver(entries => {
         //     const {width, height} = entries[0].contentRect;
         //     this.renderer?.setSize(width, height);
@@ -53,7 +59,6 @@ export class Engine {
                 this.world.self.controls = pointerControls;
                 renderer.domElement.addEventListener('click', e => {
                     pointerControls.lock();
-                    pointerControls.isLocked = true;
                 });
                 const movements = this.controls.movements;
                 const movKey = eventKeyListeners.move;
@@ -97,6 +102,16 @@ export class Engine {
             renderer?.domElement.removeEventListener('pointerdown', world.editor.placeVoxel);
             controls.removeEventListener('change', world.editor.selectVoxel);
         }
+    }
+
+    public setFullScreen(isFullScreen: boolean) {
+        if (!this.renderFrameElement) {
+            console.error('You must call setRednerer() before use this function.');
+            return;
+        }
+        if (isFullScreen) this.renderFrameElement.requestFullscreen({navigationUI: "hide"});
+        else document.exitFullscreen();
+        this.fullScreenMode = isFullScreen;
     }
 
     public start() {
