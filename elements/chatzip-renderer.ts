@@ -5,7 +5,6 @@ import engine from '..';
 import '../elements/chatzip-crosshair';
 import '../elements/chatzip-palette';
 import '../elements/chatzip-menu';
-import '../elements/chatzip-world-file-manager';
 
 @customElement('chatzip-renderer')
 export class ChatZipRenderer extends LitElement {
@@ -54,9 +53,7 @@ export class ChatZipRenderer extends LitElement {
                 <canvas id="canvas"></canvas>
                 <chatzip-crosshair></chatzip-crosshair>
                 ${this.enableEditor ? html`<chatzip-palette></chatzip-palette>` : ""}
-                <chatzip-menu>
-                    <chatzip-world-file-manager></chatzip-world-file-manager>
-                </chatzip-menu>
+                ${this.enableEditor ? html`<chatzip-menu enable-editor></chatzip-menu>` : html`<chatzip-menu></chatzip-menu>`}
             </div>
         `;
     }
