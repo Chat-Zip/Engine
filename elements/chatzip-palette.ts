@@ -71,6 +71,18 @@ export class ChatZipPalette extends LitElement {
         super();
         this._colorBoard = document.createElement('div') as HTMLDivElement;
         this._colorBoard.id = 'color-board';
+        const palette = engine.world.map.palette;
+        for (let i = 1; i < 65 ; i++) {
+            const color = document.createElement('span') as HTMLSpanElement;
+            color.style.backgroundColor = palette.colors[i];
+            color.addEventListener('click', () => {
+                palette.list[palette.selected] = i;
+                this._list[palette.selected].style.backgroundColor = palette.colors[i];
+                this._colorBoard.style.display = 'none';
+            });
+            this._colorBoard.appendChild(color);
+            // if (i % 8 === 0) this._colorBoard.appendChild(document.createElement('br'));
+        }
     }
 
     protected render() {
@@ -91,22 +103,6 @@ export class ChatZipPalette extends LitElement {
                 </div>
             </div>
         `;
-    }
-
-    connectedCallback(): void {
-        super.connectedCallback();
-        const palette = engine.world.map.palette;
-        for (let i = 1; i < 65 ; i++) {
-            const color = document.createElement('span') as HTMLSpanElement;
-            color.style.backgroundColor = palette.colors[i];
-            color.addEventListener('click', () => {
-                palette.list[palette.selected] = i;
-                this._list[palette.selected].style.backgroundColor = palette.colors[i];
-                this._colorBoard.style.display = 'none';
-            });
-            this._colorBoard.appendChild(color);
-            // if (i % 8 === 0) this._colorBoard.appendChild(document.createElement('br'));
-        }
     }
 
     protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
