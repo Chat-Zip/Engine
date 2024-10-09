@@ -32,6 +32,9 @@ export class Engine {
     public setRenderer(renderFrameElement: HTMLElement, canvas: HTMLCanvasElement) {
         this.renderer = new Renderer(canvas);
         this.renderFrameElement = renderFrameElement;
+        this.renderFrameElement.addEventListener('fullscreenchange', () => {
+            this.fullScreenMode = document.fullscreenElement ? true : false;
+        });
         // new ResizeObserver(entries => {
         //     const {width, height} = entries[0].contentRect;
         //     this.renderer?.setSize(width, height);
@@ -111,7 +114,6 @@ export class Engine {
         }
         if (isFullScreen) this.renderFrameElement.requestFullscreen({navigationUI: "hide"});
         else document.exitFullscreen();
-        this.fullScreenMode = isFullScreen;
     }
 
     public start() {
