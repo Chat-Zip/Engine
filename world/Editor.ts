@@ -1,5 +1,6 @@
 import { BoxGeometry, Intersection, Mesh, MeshBasicMaterial } from "three";
 import World from ".";
+import engine from "..";
 
 const BLOCK_SIZE_BIT = 3;
 const VH_GEOMETRY = new BoxGeometry(1.001, 1.001, 1.001);
@@ -76,6 +77,7 @@ export default class Editor {
             world.remove(VOXEL_HELPER);
         }
         this.placeVoxel = () => {
+            if (!document.pointerLockElement) return;
             const { isVoxel, self, meshs, world, palette } = scope;
             const paletteNum = palette.selected;
             const intersect = self.getRaycasterIntersect(meshs.size ? Array.from(meshs.values()) : [world.map.gridHelper]);
