@@ -17,6 +17,7 @@ export default class Editor {
 
     public selectVoxel;
     public placeVoxel;
+    public setBrush;
     private getRaycasterSelectedPos;
 
     constructor(world: World) {
@@ -87,6 +88,20 @@ export default class Editor {
                 else 
                     world.map.setBlock(selectPos.x, selectPos.y, selectPos.z, paletteNum === -1 ? 0 : palette.list[paletteNum])
                 world.map.updateVoxelGeometry(selectPos.x, selectPos.y, selectPos.z);
+            }
+        }
+        this.setBrush = (mode: 'voxel' | 'block') => {
+            switch(mode) {
+                case 'voxel':
+                    if (this.isVoxel) return;
+                    this.isVoxel = true;
+                    VH_GEOMETRY.scale(1/8, 1/8, 1/8);
+                    break;
+                case 'block':
+                    if (!this.isVoxel) return;
+                    this.isVoxel = false;
+                    VH_GEOMETRY.scale(8, 8, 8);
+                    break;
             }
         }
     }
