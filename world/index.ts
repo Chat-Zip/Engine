@@ -1,4 +1,4 @@
-import { Scene, GridHelper } from "three";
+import { Scene } from "three";
 import JSZip from "jszip";
 import Skybox from "./components/Skybox";
 import Light from "./components/Light";
@@ -151,6 +151,14 @@ export default class World extends Scene {
     public update(delta: number) {
         this.self.update(delta);
         this.users.forEach((user: User) => user.update(delta));
+    }
+
+    public setSpawnPoint() {
+        const spawnPoint = this.data.spawnPoint;
+        const selfPos = this.self.state.pos;
+        spawnPoint[0] = selfPos[0];
+        spawnPoint[1] = selfPos[1];
+        spawnPoint[2] = selfPos[2];
     }
 
     public async save(fileName: string) {
