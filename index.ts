@@ -1,4 +1,4 @@
-import { Clock } from "three";
+import { Clock, EventDispatcher } from "three";
 import World from "./world";
 import Controls from "./controls/Controls";
 import Renderer from "./Renderer";
@@ -10,7 +10,7 @@ const clock = new Clock();
 const TICK = 0.1;
 let duration = 0;
 
-export class Engine {
+export class Engine extends EventDispatcher {
     public world: World;
     public controls: Controls | undefined;
     public renderer: Renderer | undefined;
@@ -21,6 +21,7 @@ export class Engine {
     public renderFrameElement: HTMLElement | undefined;
 
     constructor() {
+        super();
         this.world = new World();
         this.controls = undefined;
         this.renderer = undefined;
