@@ -74,11 +74,13 @@ export default class PointerControls extends Controls {
         this.connect();
     }
 
-    public lock() {
-        this.domElement.requestPointerLock();
+    public async lock() {
+        await this.domElement.requestPointerLock();
+        this.isLocked = true;
     }
 
     public unlock() {
         this.domElement.ownerDocument.exitPointerLock();
+        this.isLocked = false;
     }
 }
