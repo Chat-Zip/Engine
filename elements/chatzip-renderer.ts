@@ -69,6 +69,7 @@ export class ChatZipRenderer extends LitElement {
         new ResizeObserver(entries => {
             const {width, height} = entries[0].contentRect;
             engine.renderer?.setSize(width, height);
+            engine.dispatchEvent({type: 'resize-render-frame', contentRect: entries[0].contentRect});
         }).observe(_render_frame);
         engine.start();
     }
