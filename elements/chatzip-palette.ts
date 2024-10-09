@@ -10,6 +10,8 @@ export class ChatZipPalette extends LitElement {
     @query('#palette') _palette!: HTMLDivElement;
     @queryAll('.palette-list') _list!: HTMLCollectionOf<HTMLSpanElement>;
     @query('#eraser') _eraser!: HTMLSpanElement;
+    @query('#brush-v') _brush_voxel!: HTMLSpanElement;
+    @query('#brush-b') _brush_block!: HTMLSpanElement;
 
     static styles?: CSSResultGroup = css`
         #palette {
@@ -40,9 +42,20 @@ export class ChatZipPalette extends LitElement {
             border-color: #000000aa;
             border-width: 2px;
         }
+        #brush {
+            font-weight: bold;
+            font-size: medium;
+            margin: 8px;
+        }
+        #brush > span {
+            background: #ffffffaa;
+            padding: 4px;
+            margin: 0 4px 0 0;
+            border-radius: 32px;
+            border-color: #00000080;
+        }
         #color-board {
             display: none;
-            margin-top: 32px;
             line-height: 0%;
             grid-template-columns: repeat(8, 32px);
             grid-template-rows: repeat(8, 32px);
@@ -72,6 +85,10 @@ export class ChatZipPalette extends LitElement {
                 <span class="palette-list">7</span>
                 <span class="palette-list">8</span>
                 <span class="palette-list" id="eraser">X</span>
+                <div id="brush">
+                    <span id="brush-v">VOXEL(V)</span>
+                    <span id="brush-b">BLOCK(B)</span>
+                </div>
             </div>
         `;
     }
@@ -94,7 +111,9 @@ export class ChatZipPalette extends LitElement {
 
     protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
         const palette = engine.world.map.palette;
+        const editor = engine.world.editor;
         const uiKey = eventKeyListeners.ui;
+        
         const selectColor = (index: number) => {
             const { _list } = this;
             // index : -1 => eraser / 0 ~ 7 -> list
@@ -123,6 +142,25 @@ export class ChatZipPalette extends LitElement {
             }
             palette.selected = index;
         }
+
+        const selectBrush = (brush: 'voxel' | 'block') => {
+            switch(brush) {
+                case 'voxel':
+                    this._brush_voxel.style.background = "#ffffffc0";
+                    this._brush_block.style.background = "#ffffff40";
+                    this._brush_voxel.style.border = "solid";
+                    this._brush_block.style.border = "none";
+                    break;
+                case 'block':
+                    this._brush_voxel.style.background = "#ffffff40";
+                    this._brush_block.style.background = "#ffffffc0";
+                    this._brush_voxel.style.border = "none";
+                    this._brush_block.style.border = "solid";
+                    break;
+            }
+            editor.setBrush(brush);
+        }
+
         uiKey.set('Digit1', () => selectColor(0));
         uiKey.set('Digit2', () => selectColor(1));
         uiKey.set('Digit3', () => selectColor(2));
@@ -132,6 +170,8 @@ export class ChatZipPalette extends LitElement {
         uiKey.set('Digit7', () => selectColor(6));
         uiKey.set('Digit8', () => selectColor(7));
         uiKey.set('KeyX', () => selectColor(-1));
+        uiKey.set('KeyV', () => selectBrush('voxel'));
+        uiKey.set('KeyB', () => selectBrush('block'));
 
         this._palette.appendChild(this._colorBoard);
         for (let i = 0, j = this._list.length; i < j; i++) {
@@ -143,5 +183,7 @@ export class ChatZipPalette extends LitElement {
                 this._colorBoard.style.display = 'grid';
             });
         }
+
+        selectBrush('voxel');
     }
 }
