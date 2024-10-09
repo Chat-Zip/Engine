@@ -75,6 +75,9 @@ export class Engine {
                 movKey.set('ArrowRight', (isDown: boolean) => movements.set('right', isDown));
                 movKey.set('Space', (isDown: boolean) => movements.set('top', isDown));
                 movKey.set('ShiftLeft', (isDown: boolean) => movements.set('down', isDown));
+                pointerControls.addEventListener('unlock', () => {
+                    pointerControls.unlock();
+                });
                 break;
             case 'touch':
                 const touchControls = new TouchControls(world.self, renderer.domElement);
