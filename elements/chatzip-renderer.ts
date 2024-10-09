@@ -60,7 +60,7 @@ export class ChatZipRenderer extends LitElement {
     protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
         console.log('chatzip-renderer: first updated', this.renderRoot);
         const { _render_frame, _canvas } = this;
-        engine.setCanvasToRenderer(_canvas);
+        engine.setRenderer(_render_frame, _canvas);
         engine.setControls(this.controls as 'pointer' | 'touch');
         engine.enableEditor(this.enableEditor ? true : false);
         new ResizeObserver(entries => {
