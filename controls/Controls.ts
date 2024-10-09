@@ -56,6 +56,10 @@ export default class Controls extends EventDispatcher {
         displacement.addScaledVector(_vector, distance);
     }
 
+    public disableMovement() {
+        this.movements.forEach((_, key, map) => map.set(key, false));
+    }
+
     public update(delta: number) {
         const state = this.self.state;
         const speed = state.speed * delta;
