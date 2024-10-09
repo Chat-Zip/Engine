@@ -1,8 +1,10 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
-import { customElement, query } from "lit/decorators.js";
+import { customElement, property, query } from "lit/decorators.js";
 import engine from "..";
 import eventKeyListeners from '../controls/KeyEventListeners';
 import PointerControls from "../controls/PointerControls";
+
+import '../elements/chatzip-world-file-manager';
 
 @customElement('chatzip-menu')
 export class ChatZipMenu extends LitElement {
@@ -10,6 +12,11 @@ export class ChatZipMenu extends LitElement {
     @query('#menu') _menu?: HTMLDivElement;
     @query('#close') _close?: HTMLDivElement;
     @query('#open') _open?: HTMLDivElement;
+
+    @query('#btn-fullscreen') _btn_fullscreen?: HTMLButtonElement;
+    @query('#btn-set-spawn-point') _btn_set_spawn_point?: HTMLButtonElement;
+
+    @property({ type: Boolean, attribute: 'enable-editor' }) enableEditor: Boolean = false;
 
     private isOpen;
 
@@ -20,6 +27,7 @@ export class ChatZipMenu extends LitElement {
             right: 0;
             margin: 16px;
             color: #ffffff;
+            background: #00000060;
             overflow-y: auto;
             -ms-overflow-style: none;  /* IE and Edge */
             scrollbar-width: none;  /* Firefox */
@@ -27,13 +35,12 @@ export class ChatZipMenu extends LitElement {
             z-index: 1;
         }
         #close {
-            background: #00000060;
             padding: 8px;
             // border-radius: 16px;
         }
         #open {
             display: none;
-            background: #00000080;
+            gap-y: 8px;
             padding: 8px;
         }
     `;
@@ -73,6 +80,13 @@ export class ChatZipMenu extends LitElement {
             const { height } = e.contentRect;
             this._menu.style.maxHeight = `${height - 32}px`;
         });
+
+        if (this._btn_fullscreen) {
+            this._btn_fullscreen.onclick = () => engine.setFullScreen(true);
+        }
+        if (this._btn_set_spawn_point) {
+            this._btn_set_spawn_point.onclick = () => engine.world.setSpawnPoint();
+        }
     }
 
     protected render() {
@@ -80,7 +94,15 @@ export class ChatZipMenu extends LitElement {
             <div id="menu">
                 <div id="close">MENU(M)</div>
                 <div id="open">
-                    <slot></slot>
+                    <p>Display</p>
+                    <button id="btn-fullscreen">FULLSCREEN</button>
+                    <hr>
+                    ${this.enableEditor ? html`
+                    <p>World</p>
+                    <chatzip-world-file-manager></chatzip-world-file-manager>
+                    <button id="btn-set-spawn-point">SET SPAWN POINT</button>
+                    <hr>
+                    ` : ''}
                 </div>
             </div>
         `;
