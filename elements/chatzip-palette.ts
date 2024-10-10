@@ -15,7 +15,6 @@ export class ChatZipPalette extends LitElement {
 
     static styles?: CSSResultGroup = css`
         #palette {
-            font-family: sans-serif;
             position: absolute;
             display: inline-block;
             left: 1rem;

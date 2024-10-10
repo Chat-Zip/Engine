@@ -38,8 +38,10 @@ export class ChatZipRenderer extends LitElement {
 
     protected render() {
         return html`
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css">
             <style>
                 #render-frame {
+                    font-family: "Galmuri11", sans-serif;
                     ${this.renderFrameStyle}
                     position: relative;
                 }
