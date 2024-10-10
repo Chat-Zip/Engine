@@ -95,6 +95,7 @@ export class Engine extends EventDispatcher {
             console.error('Only PointerControls can use editor mode.');
             return;
         }
+        this.dispatchEvent({type: 'change-editor-mode', enable: enable});
         if (enable) {
             controls?.addEventListener('lock', () => {
                 renderer?.domElement.addEventListener('pointerdown', world.editor.placeVoxel);
