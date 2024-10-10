@@ -74,8 +74,8 @@ export class Engine extends EventDispatcher {
                 movKey.set('ArrowLeft', (isDown: boolean) => movements.set('left', isDown));
                 movKey.set('KeyD', (isDown: boolean) => movements.set('right', isDown));
                 movKey.set('ArrowRight', (isDown: boolean) => movements.set('right', isDown));
-                movKey.set('Space', (isDown: boolean) => movements.set('top', isDown));
-                movKey.set('ShiftLeft', (isDown: boolean) => movements.set('down', isDown));
+                // movKey.set('Space', (isDown: boolean) => movements.set('top', isDown));
+                // movKey.set('ShiftLeft', (isDown: boolean) => movements.set('down', isDown));
                 pointerControls.addEventListener('unlock', () => {
                     pointerControls.unlock();
                 });
@@ -95,7 +95,11 @@ export class Engine extends EventDispatcher {
             console.error('Only PointerControls can use editor mode.');
             return;
         }
+        const movements = controls.movements;
+        const movKey = eventKeyListeners.move;
+
         this.dispatchEvent({type: 'change-editor-mode', enable: enable});
+
         if (enable) {
             controls?.addEventListener('lock', () => {
                 renderer?.domElement.addEventListener('pointerdown', world.editor.placeVoxel);
@@ -105,10 +109,22 @@ export class Engine extends EventDispatcher {
                 renderer?.domElement.removeEventListener('pointerdown', world.editor.placeVoxel);
                 controls.removeEventListener('change', world.editor.selectVoxel);
             });
+
+            world.self.gravity.isActive = false;
+            world.map.applyGridHelper(true);
+
+            movKey.set('Space', (isDown: boolean) => movements.set('top', isDown));
+            movKey.set('ShiftLeft', (isDown: boolean) => movements.set('down', isDown));
         }
         else {
             renderer?.domElement.removeEventListener('pointerdown', world.editor.placeVoxel);
             controls.removeEventListener('change', world.editor.selectVoxel);
+
+            world.self.gravity.isActive = true;
+            world.map.applyGridHelper(false);
+
+            movKey.set('Space', (isDown: boolean) => movements.set('jump', isDown));
+            movKey.delete('ShiftLeft');
         }
     }
 
