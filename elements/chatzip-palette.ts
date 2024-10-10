@@ -1,5 +1,5 @@
 import { css, CSSResultGroup, html, LitElement, PropertyValueMap } from 'lit'
-import { customElement, query, queryAll } from 'lit/decorators.js';
+import { customElement, property, query, queryAll } from 'lit/decorators.js';
 import engine from '..';
 import eventKeyListeners from '../controls/KeyEventListeners';
 
@@ -7,16 +7,18 @@ import eventKeyListeners from '../controls/KeyEventListeners';
 export class ChatZipPalette extends LitElement {
 
     private _colorBoard: HTMLDivElement;
+    
     @query('#palette') _palette!: HTMLDivElement;
     @queryAll('.palette-list') _list!: HTMLCollectionOf<HTMLSpanElement>;
     @query('#eraser') _eraser!: HTMLSpanElement;
     @query('#brush-v') _brush_voxel!: HTMLSpanElement;
     @query('#brush-b') _brush_block!: HTMLSpanElement;
 
+    @property({ type: Boolean, attribute: 'enable-editor' }) enableEditor: Boolean = false;
+
     static styles?: CSSResultGroup = css`
         #palette {
             position: absolute;
-            display: inline-block;
             left: 1rem;
             top: 1rem;
             z-index: 1;
@@ -28,10 +30,12 @@ export class ChatZipPalette extends LitElement {
             text-stroke: 1px black;
             text-align: center;
             border-radius: 32px;
-            font-size: larger;
+            font-size: medium;
             border-style: none;
             border-color: #fffffff0;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             width: 32px;
             height: 32px;
@@ -138,6 +142,12 @@ export class ChatZipPalette extends LitElement {
 
     protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
         const palette = engine.world.map.palette;
+
+        engine.addEventListener('change-editor-mode', (e) => {
+            this._palette.style.display = e.enable ? 'inline-block' : 'none';
+        });
+
+        this._palette.style.display = this.enableEditor ? 'inline-block' : 'none';
 
         for (let i = 0, j = this._list.length; i < j; i++) {
             const colorItem = this._list[i];
