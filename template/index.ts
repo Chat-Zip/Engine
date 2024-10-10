@@ -1,9 +1,7 @@
 import '../elements/chatzip-renderer';
-
 import engine from '..';
 
-const world = engine.world;
-const self = world.self;
-
-self.gravity.isActive = false;
-world.map.applyGridHelper(true);
+window.onload = () => {
+    document.getElementById('btn-editor-on')!.onclick = () => engine.enableEditor(true);
+    document.getElementById('btn-editor-off')!.onclick = () => engine.enableEditor(false);
+}
