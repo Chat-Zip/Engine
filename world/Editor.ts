@@ -1,6 +1,5 @@
 import { BoxGeometry, Intersection, Mesh, MeshBasicMaterial } from "three";
 import World from ".";
-import engine from "..";
 
 const BLOCK_SIZE_BIT = 3;
 const VH_GEOMETRY = new BoxGeometry(1.001, 1.001, 1.001);
@@ -91,6 +90,7 @@ export default class Editor {
                     world.map.setBlock(selectPos.x, selectPos.y, selectPos.z, paletteNum === -1 ? 0 : palette.list[paletteNum])
                 world.map.updateVoxelGeometry(selectPos.x, selectPos.y, selectPos.z);
             }
+            this.selectVoxel();
         }
         this.setBrush = (mode: 'voxel' | 'block') => {
             switch(mode) {
