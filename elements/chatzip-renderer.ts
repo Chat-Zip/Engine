@@ -54,7 +54,7 @@ export class ChatZipRenderer extends LitElement {
             <div id="render-frame">
                 <canvas id="canvas"></canvas>
                 <chatzip-crosshair></chatzip-crosshair>
-                ${this.enableEditor ? html`<chatzip-palette></chatzip-palette>` : ""}
+                ${this.enableEditor ? html`<chatzip-palette enable-editor></chatzip-palette>` : html`<chatzip-palette></chatzip-palette>`}
                 ${this.enableEditor ? html`<chatzip-menu enable-editor></chatzip-menu>` : html`<chatzip-menu></chatzip-menu>`}
             </div>
         `;
