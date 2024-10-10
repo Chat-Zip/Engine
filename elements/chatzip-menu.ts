@@ -10,10 +10,12 @@ import '../elements/chatzip-world-file-manager';
 export class ChatZipMenu extends LitElement {
 
     @query('#menu') _menu?: HTMLDivElement;
-    @query('#close') _close?: HTMLDivElement;
-    @query('#open') _open?: HTMLDivElement;
+    @query('#menu-close') _close?: HTMLDivElement;
+    @query('#menu-open') _open?: HTMLDivElement;
+    @query('#menu-editor') _menu_editor?: HTMLDivElement;
 
     @query('#btn-fullscreen') _btn_fullscreen?: HTMLButtonElement;
+    @query('#btn-goto-spawn-point') _btn_goto_spawn_point?: HTMLButtonElement;
     @query('#btn-set-spawn-point') _btn_set_spawn_point?: HTMLButtonElement;
 
     @property({ type: Boolean, attribute: 'enable-editor' }) enableEditor: Boolean = false;
@@ -26,6 +28,7 @@ export class ChatZipMenu extends LitElement {
             top: 0;
             right: 0;
             margin: 16px;
+            padding: 8px;
             color: #ffffff;
             background: #00000060;
             overflow-y: auto;
@@ -34,14 +37,15 @@ export class ChatZipMenu extends LitElement {
             border-radius: 16px;
             z-index: 1;
         }
-        #close {
-            padding: 8px;
+        #menu-close {
             // border-radius: 16px;
         }
-        #open {
+        #menu-open {
             display: none;
             gap-y: 8px;
-            padding: 8px;
+        }
+        #menu-editor {
+            display: none;
         }
     `;
 
@@ -81,8 +85,17 @@ export class ChatZipMenu extends LitElement {
             this._menu.style.maxHeight = `${height - 32}px`;
         });
 
+        engine.addEventListener('change-editor-mode', (e) => {
+            this._menu_editor!.style.display = e.enable ? 'block' : 'none';
+        });
+
+        this._menu_editor!.style.display = this.enableEditor ? 'block' : 'none';
+
         if (this._btn_fullscreen) {
             this._btn_fullscreen.onclick = () => engine.setFullScreen(true);
+        }
+        if (this._btn_goto_spawn_point) {
+            this._btn_goto_spawn_point.onclick = () => engine.world.goToSpawn();
         }
         if (this._btn_set_spawn_point) {
             this._btn_set_spawn_point.onclick = () => engine.world.setSpawnPoint();
@@ -92,17 +105,19 @@ export class ChatZipMenu extends LitElement {
     protected render() {
         return html`
             <div id="menu">
-                <div id="close">MENU(M)</div>
-                <div id="open">
+                <div id="menu-close">MENU(M)</div>
+                <div id="menu-open">
                     <p>Display</p>
                     <button id="btn-fullscreen">FULLSCREEN</button>
                     <hr>
-                    ${this.enableEditor ? html`
                     <p>World</p>
-                    <chatzip-world-file-manager></chatzip-world-file-manager>
-                    <button id="btn-set-spawn-point">SET SPAWN POINT</button>
-                    <hr>
-                    ` : ''}
+                    <button id="btn-goto-spawn-point">GO TO SPAWN POINT</button>
+                    <div id="menu-editor">
+                        <hr>
+                        <p>Editor<p>
+                        <chatzip-world-file-manager></chatzip-world-file-manager>
+                        <button id="btn-set-spawn-point">SET SPAWN POINT</button>
+                    </div>
                 </div>
             </div>
         `;
