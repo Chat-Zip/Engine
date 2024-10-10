@@ -161,6 +161,14 @@ export default class World extends Scene {
         spawnPoint[2] = selfPos[2];
     }
 
+    public goToSpawn() {
+        const spawnPoint = this.data.spawnPoint;
+        const selfPos = this.self.state.pos;
+        selfPos[0] = spawnPoint[0] !== undefined ? spawnPoint[0] : 0;
+        selfPos[1] = spawnPoint[1] !== undefined ? spawnPoint[1] : 0;
+        selfPos[2] = spawnPoint[2] !== undefined ? spawnPoint[2] : 0;
+    }
+
     public async save(fileName: string) {
         if (this.data.spawnPoint[0] === undefined) {
             alert('맵의 스폰 위치를 설정해주세요!');
@@ -174,7 +182,7 @@ export default class World extends Scene {
         chunks.forEach((data, id) => {
             f.file(`chunks/${id}`, data);
         });
-        f.generateAsync({type: "blob", compression: "DEFLATE", compressionOptions: {level: 9}}).then(obj => {
+        f.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } }).then(obj => {
             const url = URL.createObjectURL(obj);
             const a = document.createElement('a');
             a.href = url;
@@ -185,7 +193,7 @@ export default class World extends Scene {
         });
     }
 
-    public load(file: ArrayBuffer|Blob|File) {
+    public load(file: ArrayBuffer | Blob | File) {
         const f = new JSZip();
         const map = this.map;
         const updateChunks: Promise<void>[] = [];
