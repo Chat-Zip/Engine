@@ -26,6 +26,7 @@ export default class Editor {
 
         this.isVoxel = true;
         this.abortController = new AbortController();
+        this.abortController.signal.onabort = () => this.world.remove(VOXEL_HELPER);
 
         this.world = world;
         this.self = world.self;
