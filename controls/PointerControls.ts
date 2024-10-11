@@ -7,9 +7,9 @@ interface Keys {
     ui: Map<string, Function>;
 }
 
-const _changeEvent = { type: 'change' };
-const _lockEvent = { type: 'lock' };
-const _unlockEvent = { type: 'unlock' };
+// const _changeEvent = { type: 'change' };
+// const _lockEvent = { type: 'lock' };
+// const _unlockEvent = { type: 'unlock' };
 
 export default class PointerControls extends Controls {
     public keys: Keys;
@@ -34,15 +34,16 @@ export default class PointerControls extends Controls {
             const movementX = e.movementX || 0;
             const movementY = e.movementY || 0;
             scope.moveCamera(movementX, movementY);
-            scope.dispatchEvent(_changeEvent);
+            scope.dispathControlEvent('change');
         }
 
         function onPointerLockChange() {
+            console.log('POINTER_LOCK_CHANGE');
             if (scope.domElement.ownerDocument.pointerLockElement === scope.domElement) {
-                scope.dispatchEvent(_lockEvent);
+                scope.dispathControlEvent('lock');
                 scope.isLocked = true;
             } else {
-                scope.dispatchEvent(_unlockEvent);
+                scope.dispathControlEvent('unlock');
                 scope.isLocked = false;
             }
         }
@@ -76,14 +77,14 @@ export default class PointerControls extends Controls {
 
     public async lock() {
         await this.domElement.requestPointerLock();
-        this.connect();
+        // this.connect();
         this.isLocked = true;
     }
 
     public unlock() {
         this.disableMovement();
         this.domElement.ownerDocument.exitPointerLock();
-        this.disconnect();
+        // this.disconnect();
         this.isLocked = false;
     }
 }
