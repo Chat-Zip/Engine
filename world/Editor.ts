@@ -9,6 +9,7 @@ const VOXEL_HELPER = new Mesh(VH_GEOMETRY, VH_MATERIAL);
 export default class Editor {
 
     public isVoxel;
+    public abortController;
 
     private world;
     private self;
@@ -24,6 +25,8 @@ export default class Editor {
         const scope = this;
 
         this.isVoxel = true;
+        this.abortController = new AbortController();
+
         this.world = world;
         this.self = world.self;
         this.meshs = world.map.meshs;
@@ -106,5 +109,10 @@ export default class Editor {
                     break;
             }
         }
+    }
+
+    public initAbortController() {
+        this.abortController = new AbortController();
+        this.abortController.signal.onabort = () => this.world.remove(VOXEL_HELPER);
     }
 }
