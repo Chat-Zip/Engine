@@ -38,7 +38,6 @@ export default class PointerControls extends Controls {
         }
 
         function onPointerLockChange() {
-            console.log('POINTER_LOCK_CHANGE');
             if (scope.domElement.ownerDocument.pointerLockElement === scope.domElement) {
                 scope.dispathControlEvent('lock');
                 scope.isLocked = true;
