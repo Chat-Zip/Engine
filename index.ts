@@ -95,20 +95,25 @@ export class Engine extends EventDispatcher {
             console.error('Only PointerControls can use editor mode.');
             return;
         }
+
+        const editor = world.editor;
         const movements = controls.movements;
         const movKey = eventKeyListeners.move;
 
         this.dispatchEvent({type: 'change-editor-mode', enable: enable});
-
+        
         if (enable) {
-            controls?.addEventListener('lock', () => {
-                renderer?.domElement.addEventListener('pointerdown', world.editor.placeVoxel);
-                controls.addEventListener('change', world.editor.selectVoxel);
-            });
+            if (editor.abortController.signal.aborted) editor.initAbortController();
+
+            controls.addEventListener('lock', () => {
+                renderer?.domElement.addEventListener('pointerdown', editor.placeVoxel);
+                controls?.addEventListener('change', editor.selectVoxel);
+            }, {signal: editor.abortController.signal});
+
             controls.addEventListener('unlock', () => {
-                renderer?.domElement.removeEventListener('pointerdown', world.editor.placeVoxel);
-                controls.removeEventListener('change', world.editor.selectVoxel);
-            });
+                renderer?.domElement.removeEventListener('pointerdown', editor.placeVoxel);
+                controls?.removeEventListener('change', editor.selectVoxel);
+            }, {signal: editor.abortController.signal});
 
             world.self.gravity.isActive = false;
             world.map.applyGridHelper(true);
@@ -117,8 +122,7 @@ export class Engine extends EventDispatcher {
             movKey.set('ShiftLeft', (isDown: boolean) => movements.set('down', isDown));
         }
         else {
-            renderer?.domElement.removeEventListener('pointerdown', world.editor.placeVoxel);
-            controls.removeEventListener('change', world.editor.selectVoxel);
+            editor.abortController.abort();
 
             world.self.gravity.isActive = true;
             world.map.applyGridHelper(false);
