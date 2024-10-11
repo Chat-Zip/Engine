@@ -1,4 +1,4 @@
-import { Euler, Vector3, Camera, EventDispatcher } from "three";
+import { Euler, Vector3, Camera } from "three";
 import Self from "../world/components/user/Self";
 
 const _euler = new Euler(0, 0, 0, "YXZ");
@@ -6,7 +6,7 @@ const _vector = new Vector3();
 
 const _PI_2 = Math.PI / 2;
 
-export default class Controls extends EventDispatcher {
+export default class Controls extends EventTarget {
     private self: Self;
     private camera: Camera;
     private displacement: Vector3;
@@ -32,6 +32,10 @@ export default class Controls extends EventDispatcher {
 
         this.domElement = domElement;
         this.screenSpeed = 1.0;
+    }
+
+    public dispathControlEvent(type: string, eventInitDict?: CustomEventInit<unknown> | undefined) {
+        super.dispatchEvent(new CustomEvent(type, eventInitDict));
     }
 
     public moveCamera(movementX: number, movementY: number) {
