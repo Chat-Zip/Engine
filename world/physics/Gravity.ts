@@ -18,7 +18,7 @@ export default class Gravity {
         }
         return new Promise(resolve => {
             state.gravAccel -= state.gravity * delta;
-            state.velocity[1] += state.gravAccel * delta;
+            state.velocity[1] += state.gravAccel * (delta > 1 ? 0 : delta);
             resolve(null);
         });
     }
