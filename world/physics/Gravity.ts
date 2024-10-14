@@ -11,11 +11,14 @@ export default class Gravity {
     }
 
     public update(delta: number) {
-        if (!this.isActive) return;
-        const state = this.state;
+        const { state, isActive } = this
+        if (!isActive) {
+            if (state.gravAccel) state.gravAccel = 0;
+            return;
+        }
         return new Promise(resolve => {
             state.gravAccel -= state.gravity * delta;
-            state.velocity[1] += state.gravAccel * delta;
+            state.velocity[1] += state.gravAccel * (delta > 1 ? 0 : delta);
             resolve(null);
         });
     }

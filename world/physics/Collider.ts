@@ -83,7 +83,7 @@ export default class Collider {
                 const minX = Math.floor(box.min.x + velocity[0]);
                 const maxX = Math.ceil(box.max.x + velocity[0]);
                 const minY = Math.floor(box.min.y + velocity[1]);
-                const maxY = Math.ceil(box.max.y + velocity[1]);
+                const maxY = Math.ceil(box.max.y + (velocity[1] < 0 ? 0 : velocity[1]));
                 const minZ = Math.floor(box.min.z + velocity[2]);
                 const maxZ = Math.ceil(box.max.z + velocity[2]);
                 for (let y = minY; y < maxY; y++) {

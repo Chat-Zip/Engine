@@ -5,6 +5,7 @@ import Light from "./components/Light";
 import WorldMap from "./components/map";
 import Self from "./components/user/Self";
 import User from "./components/user/User";
+import Editor from "./Editor";
 
 import SKYBOX_PX from "../assets/skybox/px.png";
 import SKYBOX_NX from "../assets/skybox/nx.png";
@@ -19,10 +20,11 @@ export interface WorldData {
     skybox: Array<string>;
     intensity: number;
     paletteColors: Array<string>;
-    spawnPoint: Array<number>;
+    spawnPoint: Array<number | undefined>;
 }
 
 export default class World extends Scene {
+    public editor: Editor;
     public data: WorldData;
     public skybox: Skybox;
     public light: Light;
@@ -119,6 +121,8 @@ export default class World extends Scene {
 
         this.background = this.skybox.texture;
         this.add(this.light);
+
+        this.editor = new Editor(this);
     }
 
     private exportWorldData(): Promise<Uint8Array> {
@@ -149,6 +153,22 @@ export default class World extends Scene {
         this.users.forEach((user: User) => user.update(delta));
     }
 
+    public setSpawnPoint() {
+        const spawnPoint = this.data.spawnPoint;
+        const selfPos = this.self.state.pos;
+        spawnPoint[0] = selfPos[0];
+        spawnPoint[1] = selfPos[1];
+        spawnPoint[2] = selfPos[2];
+    }
+
+    public goToSpawn() {
+        const spawnPoint = this.data.spawnPoint;
+        const selfPos = this.self.state.pos;
+        selfPos[0] = spawnPoint[0] !== undefined ? spawnPoint[0] : 0;
+        selfPos[1] = spawnPoint[1] !== undefined ? spawnPoint[1] : 0;
+        selfPos[2] = spawnPoint[2] !== undefined ? spawnPoint[2] : 0;
+    }
+
     public async save(fileName: string) {
         if (this.data.spawnPoint[0] === undefined) {
             alert('맵의 스폰 위치를 설정해주세요!');
@@ -162,7 +182,7 @@ export default class World extends Scene {
         chunks.forEach((data, id) => {
             f.file(`chunks/${id}`, data);
         });
-        f.generateAsync({type: "blob", compression: "DEFLATE", compressionOptions: {level: 9}}).then(obj => {
+        f.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } }).then(obj => {
             const url = URL.createObjectURL(obj);
             const a = document.createElement('a');
             a.href = url;
@@ -173,14 +193,14 @@ export default class World extends Scene {
         });
     }
 
-    public load(file: ArrayBuffer|Blob|File) {
+    public load(file: ArrayBuffer | Blob | File) {
         const f = new JSZip();
         const map = this.map;
         const updateChunks: Promise<void>[] = [];
         return new Promise(resolve => {
             f.loadAsync(file).then(() => {
                 map.clearAllChunks();
-                f.folder('chunks').forEach((chunk: string, file: JSZip.JSZipObject) => {
+                f.folder('chunks')?.forEach((chunk: string, file: JSZip.JSZipObject) => {
                     updateChunks.push(
                         file.async('uint8array').then((data: Uint8Array) => {
                             map.loadChunkFromData(chunk, data);
