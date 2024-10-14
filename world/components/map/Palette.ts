@@ -1,10 +1,12 @@
 export default class Palette {
-    private colors: Array<string>;
+    public colors: Array<string>;
     public list: Uint8Array;
+    public selected: number;
 
     constructor(colors: Array<string>) {
         this.colors = colors;
         this.list = new Uint8Array([1, 23, 5, 7, 9, 14, 19, 29]);
+        this.selected = 0
     }
 
     public getRGB(voxel: number) {

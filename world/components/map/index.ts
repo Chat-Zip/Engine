@@ -79,13 +79,24 @@ export default class WorldMap {
     private world: World;
     public chunks: Map<string, Uint8Array>;
     public meshs: Map<string, THREE.Mesh>;
+    public gridHelper: THREE.GridHelper;
     public palette: Palette;
 
     constructor(world: World) {
         this.world = world;
         this.chunks = new Map();
         this.meshs = new Map();
+        this.gridHelper = new THREE.GridHelper(CHUNK_SIZE, CHUNK_SIZE);
         this.palette = new Palette(world.data.paletteColors);
+    }
+
+    public applyGridHelper(apply: Boolean) {
+        const { world, gridHelper } = this;
+        if (apply) {
+            world.add(gridHelper);
+            return;
+        }
+        world.remove(gridHelper);
     }
 
     public computeChunkId(x: number, y: number, z: number) {
@@ -237,6 +248,7 @@ export default class WorldMap {
         const {chunks, meshs} = this;
         chunks.forEach((_, chunkId) => {
             const chunkMesh = meshs.get(chunkId);
+            if (!chunkMesh) return;
             this.world.remove(chunkMesh);
             chunkMesh.geometry.dispose();
             meshs.delete(chunkId);

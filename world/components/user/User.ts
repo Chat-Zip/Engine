@@ -3,9 +3,9 @@ import UserModel from "./model";
 import Peer from "../../../connection/Peer";
 
 export interface UserData {
-    userId: string;
-    name: string;
-    avatar: string;
+    userId: string | undefined;
+    name: string | undefined;
+    avatar: string | undefined;
 }
 
 export default class User extends UserModel implements UserData {
@@ -28,6 +28,7 @@ export default class User extends UserModel implements UserData {
 
         this.userId = id;
         this.name = name;
+        this.avatar = avatar;
         this.conn = new Peer();
         this.conn.movement.onmessage = e => this.updateMovement(e.data);
     }
