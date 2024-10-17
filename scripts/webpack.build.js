@@ -1,11 +1,22 @@
 const path = require('path');
 const TerserPlugin = require("terser-webpack-plugin");
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
     mode: 'production',
+    entry: './src/index.ts',
+    output: {
+        filename: 'index.js',
+        path: path.resolve(__dirname, '../dist'),
+    },
     optimization: {
         minimize: true,
         minimizer: [new TerserPlugin()],
+    },
+    resolve: {
+        extensions: [
+            '.ts', '.js',
+        ],
     },
     module: {
         rules: [
@@ -46,15 +57,7 @@ module.exports = {
             },
         ],
     },
-    resolve: {
-        extensions: [
-            '.ts', '.js',
-        ],
-    },
-    entry: './src/index.ts',
-    devtool: 'inline-source-map',
-    output: {
-        filename: 'index.js',
-        path: path.resolve(__dirname, '../dist'),
-    },
+    plugins: [
+        new CleanWebpackPlugin(),
+    ]
 }
