@@ -1,7 +1,12 @@
 const path = require('path');
+const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
     mode: 'production',
+    optimization: {
+        minimize: true,
+        minimizer: [new TerserPlugin()],
+    },
     module: {
         rules: [
             {
@@ -47,6 +52,7 @@ module.exports = {
         ],
     },
     entry: './src/index.ts',
+    devtool: 'inline-source-map',
     output: {
         filename: 'index.js',
         path: path.resolve(__dirname, '../dist'),
