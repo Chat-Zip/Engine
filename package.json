@@ -2,8 +2,8 @@
   "name": "engine",
   "version": "0.2.0",
   "scripts": {
-    "dev": "webpack-dev-server",
-    "build": "webpack --config ./scripts/",
+    "dev": "webpack-dev-server --config ./scripts/webpack.testpage.js",
+    "build": "webpack --config ./scripts/webpack.build.js",
     "build-testpage": "webpack --config ./scripts/webpack.testpage.js"
   },
   "dependencies": {
