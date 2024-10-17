@@ -71,19 +71,18 @@ export default class PointerControls extends Controls {
             ownerDocument.removeEventListener('pointerlockchange', onPointerLockChange);
             ownerDocument.removeEventListener('pointerlockerror', onPointerLockError);
         }
-        this.connect();
     }
 
     public async lock() {
         await this.domElement.requestPointerLock();
-        // this.connect();
+        this.connect();
         this.isLocked = true;
     }
 
     public unlock() {
         this.disableMovement();
         this.domElement.ownerDocument.exitPointerLock();
-        // this.disconnect();
+        this.disconnect();
         this.isLocked = false;
     }
 }
