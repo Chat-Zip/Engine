@@ -1,9 +1,11 @@
 {
   "name": "engine",
   "version": "0.2.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "webpack-dev-server --config ./scripts/webpack.testpage.js",
-    "build": "webpack --config ./scripts/webpack.build.js",
+    "build": "webpack --config ./scripts/webpack.build.js && tsc",
     "build-testpage": "webpack --config ./scripts/webpack.testpage.js"
   },
   "dependencies": {
