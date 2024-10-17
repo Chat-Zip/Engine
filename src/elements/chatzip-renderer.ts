@@ -1,10 +1,10 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
-import engine from '../src';
+import engine from '..';
 
-import '../elements/chatzip-crosshair';
-import '../elements/chatzip-palette';
-import '../elements/chatzip-menu';
+import './chatzip-crosshair';
+import './chatzip-palette';
+import './chatzip-menu';
 
 @customElement('chatzip-renderer')
 export class ChatZipRenderer extends LitElement {

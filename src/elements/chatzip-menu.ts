@@ -1,10 +1,10 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
-import engine from "../src";
-import eventKeyListeners from '../src/controls/KeyEventListeners';
-import PointerControls from "../src/controls/PointerControls";
+import engine from "..";
+import eventKeyListeners from '../controls/KeyEventListeners';
+import PointerControls from "../controls/PointerControls";
 
-import '../elements/chatzip-world-file-manager';
+import './chatzip-world-file-manager';
 
 @customElement('chatzip-menu')
 export class ChatZipMenu extends LitElement {

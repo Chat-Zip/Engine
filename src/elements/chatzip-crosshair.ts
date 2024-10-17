@@ -1,7 +1,7 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
 import { customElement, query } from "lit/decorators.js";
 
-import CROSS_HAIR from "../src/assets/crosshair.svg";
+import CROSS_HAIR from "../assets/crosshair.svg";
 
 @customElement('chatzip-crosshair')
 export class ChatZipCrossHair extends LitElement {

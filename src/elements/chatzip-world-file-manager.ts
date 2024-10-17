@@ -1,6 +1,6 @@
 import { LitElement, html, css, PropertyValueMap, CSSResultGroup } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
-import engine from '../src';
+import engine from '..';
 
 @customElement('chatzip-world-file-manager')
 export class ChatZipWorldFileManager extends LitElement {
