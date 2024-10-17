@@ -1,6 +1,6 @@
 import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
-import engine from '..';
+import engine from '../src';
 
 import '../elements/chatzip-crosshair';
 import '../elements/chatzip-palette';

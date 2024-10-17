@@ -3,7 +3,8 @@
   "version": "0.2.0",
   "scripts": {
     "dev": "webpack-dev-server",
-    "build": "npx webpack"
+    "build": "webpack --config ./scripts/",
+    "build-testpage": "webpack --config ./scripts/webpack.testpage.js"
   },
   "dependencies": {
     "jszip": "^3.9.1",

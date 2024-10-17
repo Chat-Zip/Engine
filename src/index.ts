@@ -6,6 +6,8 @@ import PointerControls from "./controls/PointerControls";
 import eventKeyListeners from "./controls/KeyEventListeners";
 import TouchControls from "./controls/TouchControls";
 
+import '../elements/chatzip-renderer';
+
 const clock = new Clock();
 const TICK = 0.1;
 let duration = 0;

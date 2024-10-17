@@ -1,8 +1,7 @@
-import '../elements/chatzip-renderer';
-import engine from '..';
-import User from '../world/components/user/User';
+import engine from '../src';
+import User from '../src/world/components/user/User';
 
-import PERSON_IMG from '../world/components/user/model/person.png';
+import PERSON_IMG from '../src/world/components/user/model/person.png';
 
 let newConnectionUserId: string | undefined = undefined;
 const world = engine.world;

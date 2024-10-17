@@ -1,7 +1,7 @@
 import { css, CSSResultGroup, html, LitElement, PropertyValueMap } from 'lit'
 import { customElement, property, query, queryAll } from 'lit/decorators.js';
-import engine from '..';
-import eventKeyListeners from '../controls/KeyEventListeners';
+import engine from '../src';
+import eventKeyListeners from '../src/controls/KeyEventListeners';
 
 @customElement('chatzip-palette')
 export class ChatZipPalette extends LitElement {
