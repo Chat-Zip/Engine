@@ -9,7 +9,7 @@ export class WorldFileManagerElement extends HTMLElement {
 
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
+        const shadowRoot = this.attachShadow({ mode: 'open' });
 
         this.wrapper = document.createElement('div') as HTMLDivElement;
         this.wrapper.setAttribute('id', 'file-manager');
@@ -61,7 +61,7 @@ export class WorldFileManagerElement extends HTMLElement {
             }
         `;
 
-        this.shadowRoot?.append(this.wrapper, this.styleElem);
+        shadowRoot.append(this.wrapper, this.styleElem);
     }
 }
 
