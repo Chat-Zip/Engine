@@ -19,6 +19,17 @@ export class MenuElement extends HTMLElement {
 
     private styleElem: HTMLStyleElement;
 
+    private showMenuUI(open: boolean) {
+        if (open) {
+            this.open.classList.remove('hide');
+            this.close.classList.add('hide');
+        }
+        else {
+            this.open.classList.add('hide');
+            this.close.classList.remove('hide');
+        }
+    }
+
     constructor() {
         super();
         const shadowRoot = this.attachShadow({ mode: 'open' });
@@ -142,21 +153,13 @@ export class MenuElement extends HTMLElement {
             else this.removeAttribute('enable-editor');
         });
 
-        this.open.classList.add('hide');
-        this.close.classList.remove('hide');
+        this.showMenuUI(false);
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
         switch (name) {
             case 'open':
-                if (this.hasAttribute(name)) {
-                    this.open.classList.remove('hide');
-                    this.close.classList.add('hide');
-                }
-                else {
-                    this.open.classList.add('hide');
-                    this.close.classList.remove('hide');
-                }
+                this.showMenuUI(this.hasAttribute(name));
                 break;
             case 'enable-editor':
                 if (this.hasAttribute(name)) this.editor.classList.remove('hide');
