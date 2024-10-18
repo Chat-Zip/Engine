@@ -141,6 +141,9 @@ export class MenuElement extends HTMLElement {
             if (e.enable) this.setAttribute('enable-editor', '');
             else this.removeAttribute('enable-editor');
         });
+
+        this.open.classList.add('hide');
+        this.close.classList.remove('hide');
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
