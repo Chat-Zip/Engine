@@ -82,12 +82,6 @@ export class MenuElement extends HTMLElement {
         this.wrapper.appendChild(this.open);
 
         this.styleElem = document.createElement('style') as HTMLStyleElement;
-        this.updateStyle();
-
-        shadowRoot.append(this.wrapper, this.styleElem);
-    }
-
-    private updateStyle() {
         this.styleElem.textContent = `
         #menu {
             position: absolute;
@@ -103,17 +97,15 @@ export class MenuElement extends HTMLElement {
             border-radius: 16px;
             z-index: 1;
         }
-        #close {
-            display: ${this.hasAttribute('open') ? 'none' : 'block'};
-        }
         #open {
-            display: ${this.hasAttribute('open') ? 'block' : 'none'};
             gap-y: 8px;
         }
-        #editor {
-            display: ${this.hasAttribute('enable-editor') ? 'block' : 'none'};
+        .hide {
+            display: none;
         }
         `;
+
+        shadowRoot.append(this.wrapper, this.styleElem);
     }
 
     connectedCallback() {
@@ -152,7 +144,22 @@ export class MenuElement extends HTMLElement {
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
-        this.updateStyle();
+        switch (name) {
+            case 'open':
+                if (this.hasAttribute(name)) {
+                    this.open.classList.remove('hide');
+                    this.close.classList.add('hide');
+                }
+                else {
+                    this.open.classList.add('hide');
+                    this.close.classList.remove('hide');
+                }
+                break;
+            case 'enable-editor':
+                if (this.hasAttribute(name)) this.editor.classList.remove('hide');
+                else this.editor.classList.add('hide');
+                break;
+        }
     }
 
     static get observedAttributes() {
