@@ -1,4 +1,4 @@
-import { CubeTexture, CubeTextureLoader } from "three";
+import { CubeTexture, CubeTextureLoader, LinearSRGBColorSpace } from "three";
 
 const _loader = new CubeTextureLoader();
 
@@ -10,6 +10,7 @@ export default class Skybox {
         this.images = imgUrls;
         this.load(imgUrls).then((texture: CubeTexture) => {
             this.texture = texture;
+            this.texture.colorSpace = LinearSRGBColorSpace;
         });
     }
 

@@ -43,7 +43,7 @@ export default class World extends Scene {
                 SKYBOX_PZ,
                 SKYBOX_NZ
             ],
-            intensity: 1,
+            intensity: Math.PI,
             paletteColors: [
                 "",
                 "#060608",

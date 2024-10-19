@@ -1,4 +1,4 @@
-import { WebGLRenderer } from 'three';
+import { LinearSRGBColorSpace, WebGLRenderer } from 'three';
 import engine from '.';
 
 export default class Renderer extends WebGLRenderer {
@@ -7,6 +7,7 @@ export default class Renderer extends WebGLRenderer {
 
     constructor(canvas: HTMLCanvasElement) {
         super({canvas});
+        this.outputColorSpace = LinearSRGBColorSpace;
         this.camera = engine.world.self.camera;
     }
     
