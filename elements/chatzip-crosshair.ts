@@ -1,14 +1,16 @@
-import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
-import { customElement, query } from "lit/decorators.js";
-
 import CROSS_HAIR from "../assets/crosshair.svg";
 
-@customElement('chatzip-crosshair')
-export class ChatZipCrossHair extends LitElement {
+export class CrosshairElement extends HTMLElement {
+    constructor() {
+        super();
+        const shadowRoot = this.attachShadow({ mode: 'open' });
 
-    @query('#crosshair') _crosshair!: HTMLImageElement;
+        const crossHair = document.createElement('img') as HTMLImageElement;
+        crossHair.setAttribute('src', CROSS_HAIR);
+        crossHair.setAttribute('id', 'crosshair');
 
-    static styles?: CSSResultGroup = css`
+        const styleElem = document.createElement('style') as HTMLStyleElement;
+        styleElem.textContent = `
         #crosshair {
             position: absolute;
             display: inline-block;
@@ -18,25 +20,10 @@ export class ChatZipCrossHair extends LitElement {
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 1;
-        }        
-    `;
-
-    constructor() {
-        super();
-    }
-
-    protected render() {
-        return html`
-            <img id="crosshair" />
+        }
         `;
-    }
-    protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-        this._crosshair.src = CROSS_HAIR;
+        shadowRoot.append(crossHair, styleElem);
     }
 }
 
-declare global {
-    interface HTMLElementTagNameMap {
-        "chatzip-crosshair": ChatZipCrossHair;
-    }
-}
+customElements.define('chatzip-crosshair', CrosshairElement);

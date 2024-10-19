@@ -1,84 +1,109 @@
-import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
 import engine from '..';
 
-import '../elements/chatzip-crosshair';
-import '../elements/chatzip-palette';
-import '../elements/chatzip-menu';
+import { CrosshairElement } from '../elements/chatzip-crosshair';
+import { PaletteElement } from '../elements/chatzip-palette';
+import { MenuElement } from '../elements/chatzip-menu';
 
-@customElement('chatzip-renderer')
-export class ChatZipRenderer extends LitElement {
+class RendererElement extends HTMLElement {
+    private wrapper: HTMLDivElement;
+    private canvas: HTMLCanvasElement;
+    private crosshair: CrosshairElement;
+    private palette: PaletteElement;
+    private menu: MenuElement;
 
-    @query('#render-frame') _render_frame!: HTMLDivElement;
-    @query('#canvas') _canvas!: HTMLCanvasElement;
-
-    @property({ type: Boolean, attribute: 'enable-editor' }) enableEditor: Boolean = false;
-    @property({ type: String, attribute: 'controls' }) controls: String = 'pointer';
-
-    @property({ type: String, attribute: 'render-frame-style'}) renderFrameStyle = css`
-        width: 960px;
-        height: 540px;
-    `;
-    @property({ type: String, attribute: 'canvas-style'}) canvasStyle = css``;
+    private styleElem: HTMLStyleElement;
 
     constructor() {
         super();
-        console.log('chatzip-renderer: created', this._canvas);
-    }
 
-    connectedCallback(): void {
-        super.connectedCallback();
-        console.log('chatzip-renderer: added DOM', this._canvas);
-    }
+        const fontLink = document.createElement('link') as HTMLLinkElement;
+        fontLink.setAttribute('rel', 'stylesheet');
+        fontLink.setAttribute('href', 'https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css');
 
-    disconnectedCallback(): void {
-        console.log('chatzip-renderer: removed DOM', this._canvas);
-        engine.stop();
-    }
+        this.wrapper = document.createElement('div') as HTMLDivElement;
+        this.wrapper.setAttribute('id', 'render-frame');
 
-    protected render() {
-        return html`
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css">
-            <style>
-                #render-frame {
-                    font-family: "Galmuri11", sans-serif;
-                    ${this.renderFrameStyle}
-                    position: relative;
-                }
-                #canvas {
-                    ${this.canvasStyle}
-                    position: absolute;
-                    z-index: 0;
-                }
-            </style>
-            <div id="render-frame">
-                <canvas id="canvas"></canvas>
-                <chatzip-crosshair></chatzip-crosshair>
-                ${this.enableEditor ? html`<chatzip-palette enable-editor></chatzip-palette>` : html`<chatzip-palette></chatzip-palette>`}
-                ${this.enableEditor ? html`<chatzip-menu enable-editor></chatzip-menu>` : html`<chatzip-menu></chatzip-menu>`}
-            </div>
+        this.canvas = document.createElement('canvas') as HTMLCanvasElement;
+        this.canvas.setAttribute('id', 'canvas');
+
+        this.crosshair = new CrosshairElement();
+        this.palette = new PaletteElement();
+        this.menu = new MenuElement();
+
+        this.styleElem = document.createElement('style') as HTMLStyleElement;
+        this.styleElem.textContent = `
+        #render-frame {
+            font-family: "Galmuri11", sans-serif;
+            width: 960px;
+            height: 540px;
+            position: relative;
+        }
+        #canvas {
+            border-radius: 2rem;
+            position: absolute;
+            z-index: 0;
+        }
         `;
+
+        this.wrapper.append(fontLink, this.canvas, this.crosshair, this.palette, this.menu);
+        this.append(this.wrapper, this.styleElem);
     }
-    protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-        console.log('chatzip-renderer: first updated', this.renderRoot);
-        const { _render_frame, _canvas } = this;
-        engine.setRenderer(_render_frame, _canvas);
-        engine.setControls(this.controls as 'pointer' | 'touch');
-        engine.enableEditor(this.enableEditor ? true : false);
+
+    connectedCallback() {
+        requestAnimationFrame(() => this.mounted());
+    }
+
+    private mounted() {
+        engine.setRenderer(this.wrapper, this.canvas);
+        if (this.hasAttribute('controls')) {
+            if (['pointer', 'touch'].includes(this.getAttribute('controls')!)) {
+                engine.setControls(this.getAttribute('controls') as 'pointer' | 'touch');
+            }
+            else engine.setControls('pointer');
+        }
+        else engine.setControls('pointer');
+        console.log(this.hasAttribute('enable-editor'));
+        engine.enableEditor(this.hasAttribute('enable-editor'));
+
         new ResizeObserver(entries => {
             const {width, height} = entries[0].contentRect;
             engine.renderer?.setSize(width, height);
             engine.dispatchEvent({type: 'resize-render-frame', contentRect: entries[0].contentRect});
-        }).observe(_render_frame);
+        }).observe(this.wrapper);
+
         engine.start();
     }
-    protected createRenderRoot(): Element | ShadowRoot {
-        return this;
+
+    attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+        console.log(name, oldValue, newValue);
+        switch (name) {
+            case 'controls':
+                if (oldValue === newValue) return;
+                switch (newValue) {
+                    case 'pointer':
+                        engine.setControls('pointer');
+                        break;
+                    case 'touch':
+                        engine.setControls('touch');
+                        break;
+                }
+                break;
+            case 'enable-editor':
+                if (this.hasAttribute(name)) {
+                    this.palette.setAttribute('enable-editor', '');
+                    this.menu.setAttribute('enable-editor', '');
+                }
+                else {
+                    this.palette.removeAttribute('enable-editor');
+                    this.menu.removeAttribute('enable-editor');
+                }
+                break;
+        }
+    }
+
+    static get observedAttributes() {
+        return ['controls', 'enable-editor'];
     }
 }
 
-declare global {
-    interface HTMLElementTagNameMap {
-        "chatzip-renderer": ChatZipRenderer;
-    }
-}
+customElements.define('chatzip-renderer', RendererElement);
