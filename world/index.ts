@@ -1,4 +1,4 @@
-import { Scene } from "three";
+import { Color, ColorRepresentation, Scene } from "three";
 import JSZip from "jszip";
 import Skybox from "./components/Skybox";
 import Light from "./components/Light";
@@ -7,17 +7,13 @@ import Self from "./components/user/Self";
 import User from "./components/user/User";
 import Editor from "./Editor";
 
-import SKYBOX_PX from "../assets/skybox/px.png";
-import SKYBOX_NX from "../assets/skybox/nx.png";
-import SKYBOX_PY from "../assets/skybox/py.png";
-import SKYBOX_NY from "../assets/skybox/ny.png";
-import SKYBOX_PZ from "../assets/skybox/pz.png";
-import SKYBOX_NZ from "../assets/skybox/nz.png";
+import { skyboxWorker } from "../workers";
 
-const CONVERSION = 128;
+const WORLD_VERSION = 1;
+const SKYBOX_DIR = ['px', 'nx', 'py', 'ny', 'pz', 'nz'];
 
 export interface WorldData {
-    skybox: Array<string>;
+    backgroundColor: ColorRepresentation;
     intensity: number;
     paletteColors: Array<string>;
     spawnPoint: Array<number | undefined>;
@@ -35,14 +31,7 @@ export default class World extends Scene {
     constructor() {
         super();
         this.data = {
-            skybox: [
-                SKYBOX_PX,
-                SKYBOX_NX,
-                SKYBOX_PY,
-                SKYBOX_NY,
-                SKYBOX_PZ,
-                SKYBOX_NZ
-            ],
+            backgroundColor: 0xa2d3ff,
             intensity: Math.PI,
             paletteColors: [
                 "",
@@ -113,39 +102,16 @@ export default class World extends Scene {
             ],
             spawnPoint: [undefined, undefined, undefined],
         }
-        this.skybox = new Skybox(this.data.skybox);
+        this.skybox = new Skybox(undefined);
         this.light = new Light(this.data.intensity);
         this.map = new WorldMap(this);
         this.self = new Self(this);
         this.users = new Map<string, User>();
 
-        this.background = this.skybox.texture;
+        this.background = new Color(this.data.backgroundColor).convertLinearToSRGB();
         this.add(this.light);
 
         this.editor = new Editor(this);
-    }
-
-    private exportWorldData(): Promise<Uint8Array> {
-        return new Promise(resolve => {
-            const dataObj = JSON.stringify(this.data);
-            const sequence = [];
-            for (let i = 0, j = dataObj.length; i < j; i++) {
-                sequence.push(dataObj.charCodeAt(i) + CONVERSION);
-            }
-            Promise.all(sequence).then(arr => {
-                resolve(new Uint8Array(arr));
-            });
-        });
-    }
-
-    private importWorldData(uInt8Arr: Uint8Array): Promise<WorldData> {
-        return new Promise(resolve => {
-            let data = "";
-            for (let i = 0, j = uInt8Arr.length; i < j; i++) {
-                data += String.fromCharCode(uInt8Arr[i] - CONVERSION);
-            }
-            resolve(JSON.parse(data));
-        });
     }
 
     public update(delta: number) {
@@ -175,30 +141,49 @@ export default class World extends Scene {
             return;
         }
         if (fileName.length === 0) return;
-        const worldData = await this.exportWorldData();
-        const chunks = this.map.chunks;
         const f = new JSZip();
-        f.file('data', worldData);
-        chunks.forEach((data, id) => {
-            f.file(`chunks/${id}`, data);
-        });
-        f.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } }).then(obj => {
-            const url = URL.createObjectURL(obj);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${fileName}.zip`;
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-        });
+        // const worldData = await this.exportWorldData();
+        const worldData = JSON.stringify(this.data);
+        const chunks = this.map.chunks;
+
+        function saveWorldFile() {
+            Promise.all([
+                f.file('.chatzip', `${WORLD_VERSION}`), // file for version check
+                f.file('data', worldData),
+                chunks.forEach((data, id) => f.file(`chunks/${id}`, data)),
+            ]).then(() => {
+                f.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 9 } }).then(obj => {
+                    const url = URL.createObjectURL(obj);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${fileName}.zip`;
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                });
+            });
+        }
+
+        if (this.skybox?.images) skyboxWorker.postMessage(this.skybox.images);
+        else saveWorldFile();
+
+        let skyboxCount = 0;
+        skyboxWorker.onmessage = ({data}: MessageEvent<{fileName: string, data: ArrayBuffer}>) => {
+            f.file(`skybox/${data.fileName}`, data.data);
+            if (++skyboxCount < 6) return;
+            saveWorldFile();
+        }
     }
 
     public load(file: ArrayBuffer | Blob | File) {
         const f = new JSZip();
         const map = this.map;
         const updateChunks: Promise<void>[] = [];
+        const updateSkybox: Promise<void>[] = [];
+        const skyboxImgUrls = new Array<string>(6);
         return new Promise(resolve => {
             f.loadAsync(file).then(() => {
+                this.skybox.revokeImgUrls();
                 map.clearAllChunks();
                 f.folder('chunks')?.forEach((chunk: string, file: JSZip.JSZipObject) => {
                     updateChunks.push(
@@ -207,18 +192,47 @@ export default class World extends Scene {
                         })
                     );
                 });
+                f.folder('skybox')?.forEach((fileName: string, file: JSZip.JSZipObject) => {
+                    const skyboxDir = fileName.split('.')[0];
+                    if (!SKYBOX_DIR.includes(skyboxDir)) {
+                        updateSkybox.push(Promise.reject());
+                        return;
+                    };
+                    updateSkybox.push(
+                        file.async('arraybuffer').then(arrBuf => {
+                            skyboxImgUrls[
+                                skyboxDir === 'px' ? 0 :
+                                skyboxDir === 'nx' ? 1 :
+                                skyboxDir === 'py' ? 2 :
+                                skyboxDir === 'ny' ? 3 :
+                                skyboxDir === 'pz' ? 4 :
+                                5
+                            ] = URL.createObjectURL(new Blob([arrBuf], {type: "image/png"}));
+                        })
+                    );
+                });
                 Promise.all(updateChunks).then(() => {
                     const dataFile = f.file('data');
-                    if (dataFile) {
-                        dataFile.async('uint8array').then((data: Uint8Array) => {
-                            this.importWorldData(data).then((importData: WorldData) => {
-                                if (importData.skybox) this.data.skybox = importData.skybox;
-                                if (importData.intensity) this.data.intensity = importData.intensity;
-                                if (importData.paletteColors) this.data.paletteColors = importData.paletteColors;
-                                if (importData.spawnPoint) this.data.spawnPoint = importData.spawnPoint;
-                                resolve(null);
-                            });
-                        });
+                    if (!dataFile) return;
+                    dataFile.async('string').then(str => {
+                        const worldData: WorldData = JSON.parse(str);
+                        if (worldData.backgroundColor) this.data.backgroundColor = worldData.backgroundColor;
+                        if (worldData.intensity) {
+                            this.data.intensity = worldData.intensity;
+                            this.light.intensity = worldData.intensity;
+                        }
+                        if (worldData.paletteColors) this.data.paletteColors = worldData.paletteColors;
+                        if (worldData.spawnPoint) this.data.spawnPoint = worldData.spawnPoint;
+                        resolve(null);
+                    });
+                });
+                Promise.all(updateSkybox).then(() => {
+                    if (skyboxImgUrls[0]) {
+                        this.skybox = new Skybox(skyboxImgUrls);
+                        this.background = this.skybox.texture;
+                    }
+                    else {
+                        this.background = new Color(this.data.backgroundColor).convertLinearToSRGB();
                     }
                 });
             });
