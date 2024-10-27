@@ -2,18 +2,18 @@ import engine from '..';
 import PointerControls from '../controls/PointerControls';
 import eventKeyListeners from '../controls/KeyEventListeners';
 
-import { WorldFileManagerElement } from '../elements/chatzip-world-file-manager';
+import { MenuDisplayElement } from './menu/chatzip-menu-display';
+import { MenuWorldElement } from './menu/chatzip-menu-world';
+import { MenuEditorElement } from './menu/chatzip-menu-editor';
 
 export class MenuElement extends HTMLElement {
     private wrapper: HTMLDivElement;
     private close: HTMLDivElement;
     private open: HTMLDivElement;
-    private editor: HTMLDivElement;
 
-    private fullScreen: HTMLButtonElement;
-    private goToSpawnPoint: HTMLButtonElement;
-    private setSpawnPoint: HTMLButtonElement;
-    private worldFileManager: WorldFileManagerElement;
+    private displayMenu: MenuDisplayElement;
+    private worldMenu: MenuWorldElement;
+    private editorMenu: MenuEditorElement;
 
     private styleElem: HTMLStyleElement;
 
@@ -35,47 +35,21 @@ export class MenuElement extends HTMLElement {
         // menu open
         this.open = document.createElement('div') as HTMLDivElement;
         this.open.setAttribute('id', 'open');
-        // menu open - display
-        const pDisplay = document.createElement('p') as HTMLParagraphElement;
-        pDisplay.textContent = 'Display';
-        // menu open - display => fullscrenen button
-        this.fullScreen = document.createElement('button') as HTMLButtonElement;
-        this.fullScreen.setAttribute('id', 'btn-fullscreen');
-        this.fullScreen.textContent = 'FULLSCREEN';
-        this.fullScreen.onclick = () => engine.setFullScreen(true);
-        // menu open - World
-        const pWorld = document.createElement('p') as HTMLParagraphElement;
-        pWorld.textContent = 'World';
-        // menu open - World => go to spawn button
-        this.goToSpawnPoint = document.createElement('button') as HTMLButtonElement;
-        this.goToSpawnPoint.setAttribute('id', 'btn-goto-spawn-point');
-        this.goToSpawnPoint.textContent = 'GO TO SPAWN POINT';
-        this.goToSpawnPoint.onclick = () => engine.world.goToSpawn();
-        // menu open - Editor
-        this.editor = document.createElement('div') as HTMLDivElement;
-        this.editor.setAttribute('id', 'editor');
-        const pEditor = document.createElement('p') as HTMLParagraphElement;
-        pEditor.textContent = 'Editor';
-        // menu open - Editor => world file manager
-        this.worldFileManager = new WorldFileManagerElement();
-        // menu open - Editor => set spawn point
-        this.setSpawnPoint = document.createElement('button') as HTMLButtonElement;
-        this.setSpawnPoint.setAttribute('id', 'btn-set-spawn-point');
-        this.setSpawnPoint.textContent = 'SET SPAWN POINT';
-        this.setSpawnPoint.onclick = () => engine.world.setSpawnPoint();
 
-        this.editor.append(
-            pEditor,
-            this.worldFileManager,
-            this.setSpawnPoint
-        );
+        const closeButton = document.createElement('button') as HTMLButtonElement;
+        closeButton.setAttribute('id', 'btn-menu-close');
+        closeButton.textContent = 'X';
+        closeButton.onclick = () => this.showMenuUI(false);
+
+        this.displayMenu = new MenuDisplayElement();
+        this.worldMenu = new MenuWorldElement();
+        this.editorMenu = new MenuEditorElement();
+
         this.open.append(
-            pDisplay,
-            this.fullScreen,
-            document.createElement('hr'),
-            pWorld,
-            this.goToSpawnPoint,
-            this.editor
+            closeButton,
+            this.displayMenu,
+            this.worldMenu,
+            this.editorMenu
         );
         this.wrapper.appendChild(this.open);
 
@@ -83,6 +57,7 @@ export class MenuElement extends HTMLElement {
         this.styleElem.textContent = `
         #menu {
             position: absolute;
+            max-height: 492px;
             top: 0;
             right: 0;
             margin: 16px;
@@ -98,8 +73,34 @@ export class MenuElement extends HTMLElement {
         #open {
             gap-y: 8px;
         }
+        #btn-menu-close {
+            color: #ffffff;
+            padding: 4px 16px;
+            background: transparent;
+            border: solid;
+            border-color: #ffffffd0;
+            border-width: 2px;
+        }
         .hide {
             display: none;
+        }
+        button {
+            font-family: "Galmuri11", sans-serif;
+            padding: 4px;
+            border-radius: 16px;
+            border: none;
+            background: #ffffffd0;
+            margin: 4px;
+        }
+        button:hover {
+            background: #ffffff;
+        }
+        input {
+            font-family: "Galmuri11", sans-serif;
+            padding: 4px;
+            border-radius: 16px;
+            border: none;
+            margin: 4px;
         }
         `;
 
@@ -122,8 +123,8 @@ export class MenuElement extends HTMLElement {
     }
 
     private enableEditor(enable: boolean) {
-        if (enable) this.editor.classList.remove('hide');
-        else this.editor.classList.add('hide');
+        if (enable) this.editorMenu.classList.remove('hide');
+        else this.editorMenu.classList.add('hide');
     }
 
     private mounted() {

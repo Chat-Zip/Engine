@@ -216,7 +216,10 @@ export default class World extends Scene {
                     if (!dataFile) return;
                     dataFile.async('string').then(str => {
                         const worldData: WorldData = JSON.parse(str);
-                        if (worldData.backgroundColor) this.data.backgroundColor = worldData.backgroundColor;
+                        if (worldData.backgroundColor) {
+                            this.data.backgroundColor = worldData.backgroundColor;
+                            this.background = new Color(this.data.backgroundColor).convertLinearToSRGB();
+                        } 
                         if (worldData.intensity) {
                             this.data.intensity = worldData.intensity;
                             this.light.intensity = worldData.intensity;
@@ -227,12 +230,9 @@ export default class World extends Scene {
                     });
                 });
                 Promise.all(updateSkybox).then(() => {
-                    if (skyboxImgUrls[0]) {
+                    if (skyboxImgUrls.length === 6) {
                         this.skybox = new Skybox(skyboxImgUrls);
                         this.background = this.skybox.texture;
-                    }
-                    else {
-                        this.background = new Color(this.data.backgroundColor).convertLinearToSRGB();
                     }
                 });
             });

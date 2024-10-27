@@ -34,7 +34,8 @@ export class Engine extends EventDispatcher {
         this.renderer = new Renderer(canvas);
         this.renderFrameElement = renderFrameElement;
         this.renderFrameElement.addEventListener('fullscreenchange', () => {
-            this.fullScreenMode = document.fullscreenElement ? true : false;
+            this.fullScreenMode = document.fullscreenElement === this.renderFrameElement ? true : false;
+            this.dispatchEvent({type: 'fullscreen-mode', active: this.fullScreenMode});
         });
         // new ResizeObserver(entries => {
         //     const {width, height} = entries[0].contentRect;
