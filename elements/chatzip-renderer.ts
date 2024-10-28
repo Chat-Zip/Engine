@@ -1,4 +1,5 @@
 import engine from '..';
+import keyEventListeners from '../controls/KeyEventListeners';
 
 import { CrosshairElement } from '../elements/chatzip-crosshair';
 import { PaletteElement } from '../elements/chatzip-palette';
@@ -43,6 +44,9 @@ class RendererElement extends HTMLElement {
             position: absolute;
             z-index: 0;
         }
+        .hide {
+            display: none;
+        }
         `;
 
         this.wrapper.append(fontLink, this.canvas, this.crosshair, this.palette, this.menu);
@@ -82,9 +86,16 @@ class RendererElement extends HTMLElement {
                 switch (newValue) {
                     case 'pointer':
                         engine.setControls('pointer');
+                        if (keyEventListeners.ui.has('KeyH')) return;
+                        keyEventListeners.ui.set('KeyH', () => {
+                            this.crosshair.classList.toggle('hide');
+                            this.palette.classList.toggle('hide');
+                            this.menu.classList.toggle('hide');
+                        })
                         break;
                     case 'touch':
                         engine.setControls('touch');
+                        keyEventListeners.ui.delete('KeyH');
                         break;
                 }
                 break;
