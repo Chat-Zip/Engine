@@ -8,11 +8,6 @@ export default class Skybox {
 
     constructor(imgUrls: Array<string> | undefined) {
         this.images = imgUrls;
-        if (!imgUrls) return;
-        this.load(imgUrls)?.then((texture: CubeTexture) => {
-            this.texture = texture;
-            this.texture.colorSpace = LinearSRGBColorSpace;
-        });
     }
 
     public load(imgUrls: Array<string>) {
@@ -25,6 +20,7 @@ export default class Skybox {
             this.texture = _loader.load(
                 imgUrls,
                 () => {
+                    this.texture.colorSpace = LinearSRGBColorSpace;
                     this.texture.matrixAutoUpdate = false;
                     this.texture.updateMatrix();
                     resolve(this.texture);
@@ -39,5 +35,6 @@ export default class Skybox {
 
     public revokeImgUrls() {
         this.images?.forEach(url => URL.revokeObjectURL(url));
+        this.images = undefined;
     }
 }

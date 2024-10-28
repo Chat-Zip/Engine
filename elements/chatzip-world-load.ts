@@ -19,7 +19,7 @@ export class WorldLoadElement extends HTMLDivElement {
             const file = inputLoad.files?.[0];
             if (!file) return;
             engine.world.load(file).then(() => {
-                const spawnPoint = engine.world.data.spawnPoint;
+                const spawnPoint = engine.world.spawnPoint;
                 const selfPos = engine.world.self.state.pos;
                 selfPos[0] = spawnPoint[0] ? spawnPoint[0] : 0;
                 selfPos[1] = spawnPoint[1] ? spawnPoint[1] : 0;

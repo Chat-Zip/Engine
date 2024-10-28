@@ -1,6 +1,8 @@
 import engine from "..";
 import eventKeyListeners from '../controls/KeyEventListeners';
 
+const UPDATE_COLOR_ITEMS = new Map<number, string>();
+
 export class PaletteElement extends HTMLElement {
     private wrapper: HTMLDivElement;
     private paletteList: Array<HTMLSpanElement>;
@@ -9,6 +11,9 @@ export class PaletteElement extends HTMLElement {
     private brushVoxel: HTMLSpanElement;
     private brushBlock: HTMLSpanElement;
     private colorBoard: HTMLDivElement;
+    private colorBoardItems: HTMLSpanElement[];
+    private applyChange: HTMLButtonElement;
+    private cancelChange: HTMLButtonElement;
 
     private styleElem: HTMLStyleElement;
 
@@ -57,10 +62,25 @@ export class PaletteElement extends HTMLElement {
         editor.setBrush(brush);
     }
 
+    private reloadColors(target: 'all' | 'list') {
+        const palette = engine.world.map.palette;
+        if (target === 'all') {
+            // reload colors
+            for (let i = 0, j = 64; i < j; i++) {
+                this.colorBoardItems[i].style.background = palette.colors[i + 1];
+            }
+        }
+        // reload palette list
+        for (let i = 0, j = 8; i < j; i++) {
+            this.paletteList[i].style.background = palette.colors[palette.list[i]]
+        }
+    }
+
     constructor() {
         super();
         const shadowRoot = this.attachShadow({ mode: 'open' });
-        const palette = engine.world.map.palette;
+        const worldMap = engine.world.map;
+        const palette = worldMap.palette;
 
         // palette
         this.wrapper = document.createElement('div') as HTMLDivElement;
@@ -113,22 +133,69 @@ export class PaletteElement extends HTMLElement {
         this.colorBoard = document.createElement('div') as HTMLDivElement;
         this.colorBoard.setAttribute('id', 'color-board');
         this.colorBoard.setAttribute('class', 'hide');
-        for (let i = 0; i < 64; i++) {
+        this.colorBoardItems = [];
+        for (let i = 0, j = 64; i < j; i++) {
             const colorIndex = i + 1; // colorIndex 0 => empty / 1 ~ 64 => colors
+
             const colorItem = document.createElement('span') as HTMLSpanElement;
+            colorItem.setAttribute('id', `c${i}`);
             colorItem.style.backgroundColor = palette.colors[colorIndex];
-            colorItem.addEventListener('click', () => {
+
+            const colorInput = document.createElement('input') as HTMLInputElement;
+            colorInput.setAttribute('type', 'color');
+            colorInput.setAttribute('id', 'color-board-input');
+            colorInput.addEventListener('change', () => {
+                colorItem.style.backgroundColor = colorInput.value;
+                UPDATE_COLOR_ITEMS.set(i, colorInput.value);
+                if (this.applyChange.classList.contains('hide')) this.applyChange.classList.remove('hide');
+                if (this.cancelChange.classList.contains('hide')) this.cancelChange.classList.remove('hide');
+            });
+
+            colorItem.addEventListener('click', (e) => {
+                if (!e.isTrusted) return;
                 if (palette.selected === -1) return;
                 palette.list[palette.selected] = colorIndex;
                 this.paletteList[palette.selected].style.backgroundColor = palette.colors[colorIndex];
                 this.colorBoard.classList.remove('d-grid');
                 this.colorBoard.classList.add('hide');
             });
+            colorItem.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                colorInput.click();
+            });
+            this.colorBoardItems.push(colorItem);
             this.colorBoard.appendChild(colorItem);
         }
 
+        // apply or cancel change (color board)
+        this.applyChange = document.createElement('button') as HTMLButtonElement;
+        this.applyChange.setAttribute('id', 'apply-change');
+        this.applyChange.setAttribute('class', 'hide btn-apply');
+        this.applyChange.textContent = 'APPLY COLOR CHANGE';
+        this.applyChange.addEventListener('click', () => {
+            UPDATE_COLOR_ITEMS.forEach((color, idx) => {
+                palette.colors[idx + 1] = color;
+            });
+            worldMap.reloadChunks();
+            this.reloadColors('list');
+            this.applyChange.classList.add('hide');
+            this.cancelChange.classList.add('hide');
+        });
+        this.cancelChange = document.createElement('button') as HTMLButtonElement;
+        this.cancelChange.setAttribute('id', 'cancel-change');
+        this.cancelChange.setAttribute('class', 'hide btn-apply');
+        this.cancelChange.textContent = 'CANCEL';
+        this.cancelChange.addEventListener('click', () => {
+            UPDATE_COLOR_ITEMS.forEach((color, idx) => {
+                this.colorBoardItems[idx].style.backgroundColor = palette.colors[idx + 1];
+            });
+            UPDATE_COLOR_ITEMS.clear();
+            this.applyChange.classList.add('hide');
+            this.cancelChange.classList.add('hide');
+        })
+
         this.brush.append(this.brushVoxel, this.brushBlock);
-        this.wrapper.append(...this.paletteList, this.eraser, this.brush, this.colorBoard);
+        this.wrapper.append(...this.paletteList, this.eraser, this.brush, this.colorBoard, this.applyChange, this.cancelChange);
 
         this.styleElem = document.createElement('style') as HTMLStyleElement;
         this.styleElem.textContent = `
@@ -178,11 +245,34 @@ export class PaletteElement extends HTMLElement {
             // width: 2em;
             // height: 2em;
         }
+        #color-board span label {
+            width: 100%;
+            height: 100%;
+        }
+        #color-board-input {
+            display: none;
+        }
+        #apply-change {
+            color: #fff;
+            background: #00ad3aa0;
+        }
+        #apply-change:hover {
+            background: #00ad3a;
+        }
+        #cancel-change {
+            background: #d73c22a0;
+        }
+        #cancel-change:hover {
+            background: #d73c22;
+        }
         .hide {
             display: none;
         }
         .d-grid {
             display: grid;
+        }
+        .d-block {
+            display: block;
         }
         .d-inline-block {
             display: inline-block;
@@ -211,6 +301,14 @@ export class PaletteElement extends HTMLElement {
         }
         .brush-inactive {
             background: #ffffff40;
+            border: none;
+        }
+        .btn-apply {
+            font-family: "Galmuri11", sans-serif;
+            font-weight: bold;
+            padding: 8px;
+            margin: 4px;
+            border-radius: 32px;
             border: none;
         }
         `;
@@ -267,6 +365,7 @@ export class PaletteElement extends HTMLElement {
             if (e.enable) this.setAttribute('enable-editor', '');
             else this.removeAttribute('enable-editor');
         });
+        engine.addEventListener('world-loaded', () => this.reloadColors('all'));
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {

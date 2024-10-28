@@ -9,21 +9,19 @@ export class MenuIntensityElement extends HTMLDivElement {
         const intensityInput = document.createElement('input') as HTMLInputElement;
         intensityInput.setAttribute('id', 'intensity');
         intensityInput.setAttribute('type', 'number');
-        intensityInput.setAttribute('value', `${world.data.intensity}`);
+        intensityInput.setAttribute('value', `${world.light.intensity}`);
         intensityInput.setAttribute('min', '0');
         intensityInput.setAttribute('step', 'any');
         intensityInput.oninput = () => {
             const value = Number(intensityInput.value);
             world.light.intensity = value;
-            world.data.intensity = value;
         }
-        intensityInput.onfocus = () => intensityInput.value = `${world.data.intensity}`;
+        intensityInput.onfocus = () => intensityInput.value = `${world.light.intensity}`;
 
         const intensityDefault = document.createElement('button') as HTMLButtonElement;
         intensityDefault.textContent = 'SET DEFAULT';
         intensityDefault.onclick = () => {
             world.light.intensity = Math.PI;
-            world.data.intensity = Math.PI;
             intensityInput.value = `${Math.PI}`;
         }
 

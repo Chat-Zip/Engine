@@ -11,10 +11,7 @@ export class MenuBackgroundColorElement extends HTMLDivElement {
         backgroundColorInput.setAttribute('id', 'background-color');
         backgroundColorInput.setAttribute('type', 'color');
         backgroundColorInput.setAttribute('value', '#a2d3ff');
-        backgroundColorInput.oninput = () => {
-            world.data.backgroundColor = backgroundColorInput.value;
-            world.background = new Color(backgroundColorInput.value).convertLinearToSRGB();
-        }
+        backgroundColorInput.oninput = () => world.background = new Color(backgroundColorInput.value).convertLinearToSRGB();
 
         const styleElem = document.createElement('style') as HTMLStyleElement;
         styleElem.textContent = `
