@@ -73,7 +73,7 @@ const FACES = [
     },
 ]
 
-const _material = new THREE.MeshLambertMaterial({vertexColors: true});
+const _material = new THREE.MeshLambertMaterial({ vertexColors: true });
 
 export default class WorldMap {
     private world: World;
@@ -87,7 +87,7 @@ export default class WorldMap {
         this.chunks = new Map();
         this.meshs = new Map();
         this.gridHelper = new THREE.GridHelper(CHUNK_SIZE, CHUNK_SIZE);
-        this.palette = new Palette(world.data.paletteColors);
+        this.palette = new Palette();
     }
 
     public applyGridHelper(apply: Boolean) {
@@ -170,7 +170,7 @@ export default class WorldMap {
 
                     const voxel = this.getVoxel(vX, vY, vZ);
                     if (voxel) {
-                        for (const {dir, corners} of FACES) {
+                        for (const { dir, corners } of FACES) {
                             const neighbor = this.getVoxel(vX + dir[0], vY + dir[1], vZ + dir[2]);
                             if (neighbor) continue;
                             const ndx = positions.length / 3;
@@ -185,7 +185,7 @@ export default class WorldMap {
                 }
             }
         }
-        return {positions, normals, colors, index};
+        return { positions, normals, colors, index };
     }
 
     public updateVoxelGeometry(x: number, y: number, z: number) {
@@ -210,7 +210,7 @@ export default class WorldMap {
         let mesh = this.meshs.get(chunkId);
         const geometry = mesh ? mesh.geometry : new THREE.BufferGeometry();
 
-        const {positions, normals, colors, index} = this.generateGeometryData(cX, cY, cZ);
+        const { positions, normals, colors, index } = this.generateGeometryData(cX, cY, cZ);
         geometry.setAttribute(
             'position',
             new THREE.BufferAttribute(new Float32Array(positions), 3)
@@ -245,7 +245,7 @@ export default class WorldMap {
     }
 
     public clearAllChunks() {
-        const {chunks, meshs} = this;
+        const { chunks, meshs } = this;
         chunks.forEach((_, chunkId) => {
             const chunkMesh = meshs.get(chunkId);
             if (!chunkMesh) return;
@@ -263,5 +263,15 @@ export default class WorldMap {
         const y = Number(pos[1]) << CHUNK_SIZE_BIT;
         const z = Number(pos[2]) << CHUNK_SIZE_BIT;
         this.updateChunkGeometry(x, y, z);
+    }
+
+    public reloadChunks() {
+        this.chunks.forEach((data, chunk) => {
+            const pos = chunk.split(',');
+            const x = Number(pos[0]) << CHUNK_SIZE_BIT;
+            const y = Number(pos[1]) << CHUNK_SIZE_BIT;
+            const z = Number(pos[2]) << CHUNK_SIZE_BIT;
+            this.updateChunkGeometry(x, y, z);
+        });
     }
 }

@@ -16,18 +16,21 @@ class KeyEventListeners {
         const scope = this;
 
         function eventMoveKeyDown(e: KeyboardEvent) {
+            e.preventDefault();
             const move = scope.move;
             const keyCode = e.code;
             if (!move.has(keyCode)) return;
             move.get(keyCode)?.(true);
         }
         function eventMoveKeyUp(e: KeyboardEvent) {
+            e.preventDefault();
             const move = scope.move;
             const keyCode = e.code;
             if (!move.has(keyCode)) return;
             move.get(keyCode)?.(false);
         }
         function eventUiKeyDown(e: KeyboardEvent) {
+            e.preventDefault();
             const ui = scope.ui;
             const keyCode = e.code;
             if (!ui.has(keyCode)) return;

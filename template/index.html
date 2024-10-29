@@ -9,10 +9,25 @@
 <body>
     <div id="frame">
         <h1>Engine Test</h1>
-        <chatzip-renderer enable-editor controls="pointer" render-frame-style="width: 960px; height: 540px;" canvas-style="border-radius: 2rem;">
-        </chatzip-renderer>
-        <button id="btn-editor-on">EDITOR_ON</button>
-        <button id="btn-editor-off">EDITOR_OFF</button>
+        <chatzip-renderer enable-editor controls="pointer"></chatzip-renderer>
+        <div>
+            <button id="btn-editor-on">EDITOR_ON</button>
+            <button id="btn-editor-off">EDITOR_OFF</button>
+        </div>
+        <div>
+            <p>CREATE OFFER</p>
+            <button id="btn-create-offer">(1) PEER_CREATE_OFFER</button>
+            <input id="input-answer-desc" placeholder="Type answer description">
+            <button id="btn-answer-desc">(2) SET_REMOTE_DESCRIPTION</button>
+        </div>
+        <div>
+            <p>CREATE ANSWER</p>
+            <input id="input-offer-desc" placeholder="Type offer description">
+            <button id="btn-offer-desc">SET_REMOTE_DESCRIPTION & PEER_CREATE_ANSWER</button>
+            <!-- <button id="btn-create-answer">PEER_CREATE_ANSWER</button> -->
+        </div>
+        <h3>LOG</h3>
+        <div id="log" style="width: 960px; height: 540px; overflow-y: scroll;"></div>
     </div>
 </body>
 <style>

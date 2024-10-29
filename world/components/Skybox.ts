@@ -1,37 +1,40 @@
-import { CubeTexture, CubeTextureLoader } from "three";
+import { CubeTexture, CubeTextureLoader, LinearSRGBColorSpace } from "three";
 
 const _loader = new CubeTextureLoader();
 
 export default class Skybox {
-    public texture: CubeTexture;
-    public images: Array<string>;
+    public texture: CubeTexture = new CubeTexture;
+    public images: Array<string> | undefined;
 
-    constructor(imgUrls: Array<string>) {
+    constructor(imgUrls: Array<string> | undefined) {
         this.images = imgUrls;
-        this.load(imgUrls).then((texture: CubeTexture) => {
-            this.texture = texture;
-        });
     }
 
-    load(imgUrls: Array<string>) {
+    public load(imgUrls: Array<string>) {
         if (imgUrls.length !== 6) {
             console.error('Only need 6 images to make a skybox.');
             return;
         }
-        return new Promise((resolve, reject) => {
+        return new Promise<CubeTexture>((resolve, reject) => {
             this.images = imgUrls;
             this.texture = _loader.load(
                 imgUrls,
                 () => {
+                    this.texture.colorSpace = LinearSRGBColorSpace;
                     this.texture.matrixAutoUpdate = false;
                     this.texture.updateMatrix();
                     resolve(this.texture);
                 },
-                null,
+                undefined,
                 (e) => {
                     reject(e);
                 }
             );
         });
+    }
+
+    public revokeImgUrls() {
+        this.images?.forEach(url => URL.revokeObjectURL(url));
+        this.images = undefined;
     }
 }

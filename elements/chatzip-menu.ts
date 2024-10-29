@@ -1,30 +1,63 @@
-import { LitElement, html, css, CSSResultGroup, PropertyValueMap } from "lit";
-import { customElement, property, query } from "lit/decorators.js";
-import engine from "..";
+import engine from '..';
+import PointerControls from '../controls/PointerControls';
 import eventKeyListeners from '../controls/KeyEventListeners';
-import PointerControls from "../controls/PointerControls";
 
-import '../elements/chatzip-world-file-manager';
+import { MenuDisplayElement } from './menu/chatzip-menu-display';
+import { MenuWorldElement } from './menu/chatzip-menu-world';
+import { MenuEditorElement } from './menu/chatzip-menu-editor';
 
-@customElement('chatzip-menu')
-export class ChatZipMenu extends LitElement {
+export class MenuElement extends HTMLElement {
+    private wrapper: HTMLDivElement;
+    private close: HTMLDivElement;
+    private open: HTMLDivElement;
 
-    @query('#menu') _menu?: HTMLDivElement;
-    @query('#menu-close') _close?: HTMLDivElement;
-    @query('#menu-open') _open?: HTMLDivElement;
-    @query('#menu-editor') _menu_editor?: HTMLDivElement;
+    private displayMenu: MenuDisplayElement;
+    private worldMenu: MenuWorldElement;
+    private editorMenu: MenuEditorElement;
 
-    @query('#btn-fullscreen') _btn_fullscreen?: HTMLButtonElement;
-    @query('#btn-goto-spawn-point') _btn_goto_spawn_point?: HTMLButtonElement;
-    @query('#btn-set-spawn-point') _btn_set_spawn_point?: HTMLButtonElement;
+    private styleElem: HTMLStyleElement;
 
-    @property({ type: Boolean, attribute: 'enable-editor' }) enableEditor: Boolean = false;
+    constructor() {
+        super();
+        const shadowRoot = this.attachShadow({ mode: 'open' });
 
-    private isOpen;
+        // menu
+        this.wrapper = document.createElement('div') as HTMLDivElement;
+        this.wrapper.setAttribute('id', 'menu');
 
-    static styles: CSSResultGroup = css`
+        // menu close
+        this.close = document.createElement('div') as HTMLDivElement;
+        this.close.setAttribute('id', 'close');
+        this.close.textContent = 'MENU(M)';
+        this.close.onclick = () => this.setAttribute('open', '');
+        this.wrapper.appendChild(this.close);
+
+        // menu open
+        this.open = document.createElement('div') as HTMLDivElement;
+        this.open.setAttribute('id', 'open');
+
+        const closeButton = document.createElement('button') as HTMLButtonElement;
+        closeButton.setAttribute('id', 'btn-menu-close');
+        closeButton.textContent = 'X';
+        closeButton.onclick = () => this.showMenuUI(false);
+
+        this.displayMenu = new MenuDisplayElement();
+        this.worldMenu = new MenuWorldElement();
+        this.editorMenu = new MenuEditorElement();
+
+        this.open.append(
+            closeButton,
+            this.displayMenu,
+            this.worldMenu,
+            this.editorMenu
+        );
+        this.wrapper.appendChild(this.open);
+
+        this.styleElem = document.createElement('style') as HTMLStyleElement;
+        this.styleElem.textContent = `
         #menu {
             position: absolute;
+            max-height: 492px;
             top: 0;
             right: 0;
             margin: 16px;
@@ -37,95 +70,114 @@ export class ChatZipMenu extends LitElement {
             border-radius: 16px;
             z-index: 1;
         }
-        #menu-close {
-            // border-radius: 16px;
-        }
-        #menu-open {
-            display: none;
+        #open {
             gap-y: 8px;
         }
-        #menu-editor {
+        #btn-menu-close {
+            color: #ffffff;
+            padding: 4px 16px;
+            background: transparent;
+            border: solid;
+            border-color: #ffffffd0;
+            border-width: 2px;
+        }
+        .hide {
             display: none;
         }
-    `;
-
-    private showMenuUI(show: boolean) {
-        if (!this._menu || !this._close || !this._open) return;
-        this.isOpen = show;
-        this._close.style.display = show ? 'none' : 'block';
-        this._open.style.display = show ? 'block' : 'none';
-    }
-
-    constructor() {
-        super();
-        this.isOpen = false;
-    }
-
-    protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-        const controls = engine.controls;
-
-        if (controls instanceof PointerControls) {
-            const pointerControls = engine.controls as PointerControls;
-
-            pointerControls.addEventListener('lock', () => {
-                this.showMenuUI(false);
-            })
-
-            eventKeyListeners.ui.set('KeyM', () => {
-                this.showMenuUI(!this.isOpen);
-                if (this.isOpen) {
-                    pointerControls.unlock();
-                }
-            });
+        button {
+            font-family: "Galmuri11", sans-serif;
+            padding: 4px;
+            border-radius: 16px;
+            border: none;
+            background: #ffffffd0;
+            margin: 4px;
         }
+        button:hover {
+            background: #ffffff;
+        }
+        input {
+            font-family: "Galmuri11", sans-serif;
+            padding: 4px;
+            border-radius: 16px;
+            border: none;
+            margin: 4px;
+        }
+        `;
 
+        shadowRoot.append(this.wrapper, this.styleElem);
+    }
+
+    connectedCallback() {
+        requestAnimationFrame(() => this.mounted());
+    }
+
+    private showMenuUI(open: boolean) {
+        if (open) {
+            this.open.classList.remove('hide');
+            this.close.classList.add('hide');
+        }
+        else {
+            this.open.classList.add('hide');
+            this.close.classList.remove('hide');
+        }
+    }
+
+    private enableEditor(enable: boolean) {
+        if (enable) this.editorMenu.classList.remove('hide');
+        else this.editorMenu.classList.add('hide');
+    }
+
+    private mounted() {
+        if (engine.controls) {
+            if (engine.controls instanceof PointerControls) {
+                const pointerControls = engine.controls as PointerControls;
+                pointerControls.addEventListener('lock', () => {
+                    this.removeAttribute('open');
+                })
+                eventKeyListeners.ui.set('KeyM', () => {
+                    if (this.hasAttribute('open')) {
+                        this.removeAttribute('open');
+                    }
+                    else {
+                        this.setAttribute('open', '');
+                        pointerControls.unlock();
+                    }
+                });
+            }
+        }
+        else {
+            requestAnimationFrame(() => this.mounted());
+            return;
+        }
+        
         engine.addEventListener('resize-render-frame', (e) => {
-            if (!this._menu) return;
             const { height } = e.contentRect;
-            this._menu.style.maxHeight = `${height - 32}px`;
+            this.wrapper.style.maxHeight = `${height - 48}px`;
         });
 
         engine.addEventListener('change-editor-mode', (e) => {
-            this._menu_editor!.style.display = e.enable ? 'block' : 'none';
+            if (e.enable) this.setAttribute('enable-editor', '');
+            else this.removeAttribute('enable-editor');
         });
 
-        this._menu_editor!.style.display = this.enableEditor ? 'block' : 'none';
+        this.enableEditor(this.hasAttribute('enable-editor'));
+        this.showMenuUI(false);
+    }
 
-        if (this._btn_fullscreen) {
-            this._btn_fullscreen.onclick = () => engine.setFullScreen(true);
-        }
-        if (this._btn_goto_spawn_point) {
-            this._btn_goto_spawn_point.onclick = () => engine.world.goToSpawn();
-        }
-        if (this._btn_set_spawn_point) {
-            this._btn_set_spawn_point.onclick = () => engine.world.setSpawnPoint();
+    attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+        switch (name) {
+            case 'open':
+                this.showMenuUI(this.hasAttribute(name));
+                break;
+            case 'enable-editor':
+                this.enableEditor(this.hasAttribute(name));
+                break;
         }
     }
 
-    protected render() {
-        return html`
-            <div id="menu">
-                <div id="menu-close">MENU(M)</div>
-                <div id="menu-open">
-                    <p>Display</p>
-                    <button id="btn-fullscreen">FULLSCREEN</button>
-                    <hr>
-                    <p>World</p>
-                    <button id="btn-goto-spawn-point">GO TO SPAWN POINT</button>
-                    <div id="menu-editor">
-                        <hr>
-                        <p>Editor<p>
-                        <chatzip-world-file-manager></chatzip-world-file-manager>
-                        <button id="btn-set-spawn-point">SET SPAWN POINT</button>
-                    </div>
-                </div>
-            </div>
-        `;
+    static get observedAttributes() {
+        return ['open', 'enable-editor'];
     }
 }
 
-declare global {
-    interface HTMLElementTagNameMap {
-        "chatzip-menu": ChatZipMenu;
-    }
-}
+customElements.define('chatzip-menu', MenuElement);

@@ -1,0 +1,1 @@
+export const skyboxWorker = new Worker(new URL('./SkyboxWorker.ts', import.meta.url));
