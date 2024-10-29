@@ -1,6 +1,7 @@
 export default class Peer extends RTCPeerConnection {
     public chat: RTCDataChannel;
     public movement: RTCDataChannel;
+    public worldMapInfoHash: RTCDataChannel;
 
     constructor() {
         const iceConfig = {
@@ -15,6 +16,7 @@ export default class Peer extends RTCPeerConnection {
         this.chat = this.createDataChannel('chat', {negotiated: true, id: 0});
         this.movement = this.createDataChannel('move', {negotiated: true, id: 1});
         this.movement.binaryType = 'arraybuffer';
+        this.worldMapInfoHash = this.createDataChannel('world-map-infohash', {negotiated: true, id: 2});
     }
 
     public createSessionDescription(type: 'answer'|'offer') {
@@ -44,6 +46,12 @@ export default class Peer extends RTCPeerConnection {
         const {movement} = this;
         if (movement.readyState !== 'open') return;
         movement.send(data);
+    }
+
+    public sendWorldMapInfoHash(infoHash: string) {
+        const {worldMapInfoHash} = this;
+        if (worldMapInfoHash.readyState !== 'open') return;
+        worldMapInfoHash.send(infoHash);
     }
 
     public close() {
