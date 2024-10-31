@@ -64,6 +64,15 @@ window.onload = () => {
             log(`Sended peer (${world.infoHash})`);
         });
     }
+    document.getElementById('input-user-img')!.oninput = (e) => {
+        const file = e.target.files?.[0];
+        wtClient.seed(file, (torrent) => {
+            world.self.peers.forEach((user) => {
+                user.userImgInfoHash.send(torrent.infoHash);
+                log(`Sended peer (${torrent.infoHash})`);
+            });
+        });
+    }
 
     document.getElementById('btn-create-offer')!.onclick = () => {
         const user = createUserObject();
