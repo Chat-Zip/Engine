@@ -42,17 +42,19 @@ export default class User extends UserModel implements UserData {
         }
 
         this.conn.movement.onmessage = e => this.updateMovement(e.data);
-        this.conn.userImgInfoHash.onmessage = e => {
-            wtClient.get(e.data).then(async (t: Torrent) => {
+        this.conn.infohash.addEventListener('message', e => {
+            const data = JSON.parse(e.data);
+            if (data.type !== 'user-img') return;
+            wtClient.get(data.infohash).then(async (t: Torrent) => {
                 if (t) {
                     applyAvatarFromTorrent(t);
                     return;
                 }
-                wtClient.add(getMagnetLink(e.data), async (torrent) => {
+                wtClient.add(getMagnetLink(data.infohash), async (torrent) => {
                     applyAvatarFromTorrent(torrent);
                 });
             });
-        }
+        });
     }
 
     private updateMovement(buffer: ArrayBuffer) {

@@ -33,16 +33,18 @@ window.onload = () => {
     }
 
     async function onWorldMapInfoHash(e: MessageEvent<string>) {
-        if (engine.world.infoHash === e.data) return;
-        engine.world.infoHash = e.data;
-        log(`Received world infohash (${e.data})`);
-        wtClient.get(e.data).then(async (t: Torrent) => {
+        const data = JSON.parse(e.data);
+        if (data.type !== 'world') return;
+        if (engine.world.infoHash === data.infohash) return;
+        engine.world.infoHash = data.infohash;
+        log(`Received world infohash (${data.infohash})`);
+        wtClient.get(data.infohash).then(async (t: Torrent) => {
             if (t) {
                 const blob = await t.files[0].blob();
                 engine.world.load(blob).then(onWorldLoaded);
                 return;
             }
-            wtClient.add(getMagnetLink(e.data), async (torrent) => {
+            wtClient.add(getMagnetLink(data.infohash), async (torrent) => {
                 const blob = await torrent.files[0].blob();
                 engine.world.load(blob).then(onWorldLoaded);
             });
@@ -60,7 +62,7 @@ window.onload = () => {
     document.getElementById('btn-sync-world')!.onclick = () => {
         if (!world.infoHash) return;
         world.self.peers.forEach((user) => {
-            user.worldMapInfoHash.send(world.infoHash as string);
+            user.sendInfoHash(JSON.stringify({type: 'world', infohash: world.infoHash}));
             log(`Sended peer (${world.infoHash})`);
         });
     }
@@ -68,7 +70,7 @@ window.onload = () => {
         const file = e.target.files?.[0];
         wtClient.seed(file, (torrent) => {
             world.self.peers.forEach((user) => {
-                user.userImgInfoHash.send(torrent.infoHash);
+                user.sendInfoHash(JSON.stringify({type: 'user-img', infohash: torrent.infoHash}));
                 log(`Sended peer (${torrent.infoHash})`);
             });
         });
@@ -104,7 +106,7 @@ window.onload = () => {
             posArr.set(world.self.state.pos);
             user.conn.sendMovement(posArr);
         }
-        user.conn.worldMapInfoHash.onmessage = onWorldMapInfoHash;
+        user.conn.infohash.addEventListener('message', onWorldMapInfoHash);
     }
 
     const inputOfferDesc = document.getElementById('input-offer-desc') as HTMLInputElement;
@@ -132,7 +134,7 @@ window.onload = () => {
             posArr.set(world.self.state.pos);
             user.conn.sendMovement(posArr);
         }
-        user.conn.worldMapInfoHash.onmessage = onWorldMapInfoHash;
+        user.conn.infohash.addEventListener('message', onWorldMapInfoHash);
     }
     
     engine.addEventListener('world-loaded', () => {

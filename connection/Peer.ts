@@ -1,8 +1,7 @@
 export default class Peer extends RTCPeerConnection {
     public chat: RTCDataChannel;
     public movement: RTCDataChannel;
-    public worldMapInfoHash: RTCDataChannel;
-    public userImgInfoHash: RTCDataChannel;
+    public infohash: RTCDataChannel;
 
     constructor() {
         const iceConfig = {
@@ -17,8 +16,7 @@ export default class Peer extends RTCPeerConnection {
         this.chat = this.createDataChannel('chat', {negotiated: true, id: 0});
         this.movement = this.createDataChannel('move', {negotiated: true, id: 1});
         this.movement.binaryType = 'arraybuffer';
-        this.worldMapInfoHash = this.createDataChannel('world-map-infohash', {negotiated: true, id: 2});
-        this.userImgInfoHash = this.createDataChannel('user-img-infohash', {negotiated: true, id: 3});
+        this.infohash = this.createDataChannel('infohash', {negotiated: true, id: 2});
     }
 
     public createSessionDescription(type: 'answer'|'offer') {
@@ -50,16 +48,10 @@ export default class Peer extends RTCPeerConnection {
         movement.send(data);
     }
 
-    public sendWorldMapInfoHash(infoHash: string) {
-        const {worldMapInfoHash} = this;
-        if (worldMapInfoHash.readyState !== 'open') return;
-        worldMapInfoHash.send(infoHash);
-    }
-
-    public sendUserImgInfoHash(infoHash: string) {
-        const {userImgInfoHash} = this;
-        if (userImgInfoHash.readyState !== 'open') return;
-        userImgInfoHash.send(infoHash);
+    public sendInfoHash(infoHash: string) {
+        const {infohash} = this;
+        if (infohash.readyState !== 'open') return;
+        infohash.send(infoHash);
     }
 
     public close() {
