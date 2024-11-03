@@ -21,7 +21,7 @@ export default class User extends UserModel implements UserData {
     avatar: string;
     conn: Peer;
 
-    constructor(camera: Camera, id: string, name: string, avatar: string) {
+    constructor(camera: Camera, id: string, name: string, avatar: string, connection: Peer) {
         super(name, avatar);
         this.camera = camera;
         this.prevPos = new Vector3();
@@ -31,7 +31,7 @@ export default class User extends UserModel implements UserData {
         this.userId = id;
         this.name = name;
         this.avatar = avatar;
-        this.conn = new Peer();
+        this.conn = connection;
 
         const scope = this;
         async function applyAvatarFromTorrent(torrent: Torrent) {

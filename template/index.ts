@@ -1,27 +1,10 @@
 import '../elements/chatzip-renderer';
 import engine from '..';
-import User from '../world/components/user/User';
-import wtClient, { getMagnetLink } from '../connection/WTClient';
+import Peer from '../connection/Peer';
+import wtClient from '../connection/WTClient';
+import * as CONNECTION_CALLBACK from '../connection/Callbacks';
 
-import PERSON_IMG from '../world/components/user/model/person.png';
-import { Torrent } from 'webtorrent';
-
-let newConnectionUserId: string | undefined = undefined;
 const world = engine.world;
-
-function createUserObject(): User {
-    const id = Math.random().toString(36).substring(2,6);
-    const user = new User(world.self.camera, id, id, PERSON_IMG);
-    return user;
-}
-
-function onWorldLoaded() {
-    const spawnPoint = engine.world.spawnPoint;
-    const selfPos = engine.world.self.state.pos;
-    selfPos[0] = spawnPoint[0] ? spawnPoint[0] : 0;
-    selfPos[1] = spawnPoint[1] ? spawnPoint[1] : 0;
-    selfPos[2] = spawnPoint[2] ? spawnPoint[2] : 0;
-}
 
 window.onload = () => {
     const logDiv = document.getElementById('log') as HTMLDivElement;
@@ -30,25 +13,6 @@ window.onload = () => {
         const logMsg = document.createElement('div');
         logMsg.innerText = msg;
         logDiv.appendChild(logMsg);
-    }
-
-    async function onWorldMapInfoHash(e: MessageEvent<string>) {
-        const data = JSON.parse(e.data);
-        if (data.type !== 'world') return;
-        if (engine.world.infoHash === data.infohash) return;
-        engine.world.infoHash = data.infohash;
-        log(`Received world infohash (${data.infohash})`);
-        wtClient.get(data.infohash).then(async (t: Torrent) => {
-            if (t) {
-                const blob = await t.files[0].blob();
-                engine.world.load(blob).then(onWorldLoaded);
-                return;
-            }
-            wtClient.add(getMagnetLink(data.infohash), async (torrent) => {
-                const blob = await torrent.files[0].blob();
-                engine.world.load(blob).then(onWorldLoaded);
-            });
-        });
     }
 
     document.getElementById('btn-editor-on')!.onclick = () => {
@@ -62,84 +26,78 @@ window.onload = () => {
     document.getElementById('btn-sync-world')!.onclick = () => {
         if (!world.infoHash) return;
         world.self.peers.forEach((user) => {
-            user.sendInfoHash(JSON.stringify({type: 'world', infohash: world.infoHash}));
+            user.sendInfoHash({ type: 'world', infohash: world.infoHash as string });
             log(`Sended peer (${world.infoHash})`);
         });
     }
     document.getElementById('input-user-img')!.oninput = (e) => {
         const file = e.target.files?.[0];
         wtClient.seed(file, (torrent) => {
+            world.self.data.avatar = torrent.infoHash;
             world.self.peers.forEach((user) => {
-                user.sendInfoHash(JSON.stringify({type: 'user-img', infohash: torrent.infoHash}));
+                user.sendInfoHash({ type: 'user-img', infohash: torrent.infoHash });
                 log(`Sended peer (${torrent.infoHash})`);
             });
         });
     }
 
     document.getElementById('btn-create-offer')!.onclick = () => {
-        const user = createUserObject();
-        newConnectionUserId = user.userId;
-        user.conn.createSessionDescription('offer').then(sessionDescription => {
-            console.log(JSON.stringify(sessionDescription));
+        const peer = new Peer();
+        CONNECTION_CALLBACK.newPeerQueue.push(peer);
+        peer.createSessionDescription('offer').then(sessionDescription => {
             log("Created offer: " + JSON.stringify(sessionDescription));
-        });
-        world.users.set(user.userId, user);
+        }); 
     }
     const inputAnswerDesc = document.getElementById('input-answer-desc') as HTMLInputElement;
     document.getElementById('btn-answer-desc')!.onclick = () => {
-        if (!newConnectionUserId) return;
+        const peer = CONNECTION_CALLBACK.newPeerQueue.shift();
+        if (!peer) return;
 
-        const user = world.users.get(newConnectionUserId);
-        if (!user) return;
+        peer.setRemoteDescription(JSON.parse(inputAnswerDesc.value));
 
-        user.conn.setRemoteDescription(JSON.parse(inputAnswerDesc.value));
+        peer.addEventListener('user-info', CONNECTION_CALLBACK.onReceiveUserInfo);
+        peer.addEventListener('req-offer', CONNECTION_CALLBACK.onReceiveReqOffer);
+        peer.addEventListener('req-answer', CONNECTION_CALLBACK.onReceiveReqAnswer);
+        peer.addEventListener('recv-answer', CONNECTION_CALLBACK.onReceiveRecvAnswer);
 
-        world.self.peers.set(newConnectionUserId, user.conn);
+        peer.addEventListener('onconnected', () => {
+            const selfData = world.self.data;
+            if (!selfData.userId) selfData.userId = Math.random().toString(36).substring(2, 6);
+            if (!selfData.name) selfData.name = selfData.userId;
+            peer.signalling.onopen = () => peer.sendSignalData({type: 'user-info', id: selfData.userId, name: selfData.name, imgInfoHash: selfData.avatar});
+        });
 
-        user.conn.movement.onopen = () => {
-            newConnectionUserId = undefined;
-            log(`Connected with (${user.userId})`);
-            world.add(user);
-
-            const posBuffer = new ArrayBuffer(12);
-            const posArr = new Float32Array(posBuffer);
-            posArr.set(world.self.state.pos);
-            user.conn.sendMovement(posArr);
-        }
-        user.conn.infohash.addEventListener('message', onWorldMapInfoHash);
+        peer.infohash.addEventListener('message', CONNECTION_CALLBACK.onWorldMapInfoHash);
     }
 
     const inputOfferDesc = document.getElementById('input-offer-desc') as HTMLInputElement;
     document.getElementById('btn-offer-desc')!.onclick = () => {
-        const user = createUserObject();
-        newConnectionUserId = user.userId;
+        const peer = new Peer();
 
-        user.conn.setRemoteDescription(JSON.parse(inputOfferDesc.value));
+        peer.setRemoteDescription(JSON.parse(inputOfferDesc.value));
 
-        user.conn.createSessionDescription('answer').then(sessionDescription => {
-            console.log(JSON.stringify(sessionDescription));
+        peer.createSessionDescription('answer').then(sessionDescription => {
             log("Created answer: " + JSON.stringify(sessionDescription));
         });
 
-        world.users.set(user.userId, user);
-        world.self.peers.set(newConnectionUserId, user.conn);
-        
-        user.conn.movement.onopen = () => {
-            newConnectionUserId = undefined;
-            log(`Connected with (${user.userId})`);
-            world.add(user);
+        peer.addEventListener('user-info', CONNECTION_CALLBACK.onReceiveUserInfo);
+        peer.addEventListener('req-offer', CONNECTION_CALLBACK.onReceiveReqOffer);
+        peer.addEventListener('req-answer', CONNECTION_CALLBACK.onReceiveReqAnswer);
+        peer.addEventListener('recv-answer', CONNECTION_CALLBACK.onReceiveRecvAnswer);
 
-            const posBuffer = new ArrayBuffer(12);
-            const posArr = new Float32Array(posBuffer);
-            posArr.set(world.self.state.pos);
-            user.conn.sendMovement(posArr);
-        }
-        user.conn.infohash.addEventListener('message', onWorldMapInfoHash);
+        peer.addEventListener('onconnected', () => {
+            const selfData = world.self.data;
+            if (!selfData.userId) selfData.userId = Math.random().toString(36).substring(2, 6);
+            if (!selfData.name) selfData.name = selfData.userId;
+            peer.signalling.onopen = () => peer.sendSignalData({type: 'user-info', id: selfData.userId, name: selfData.name, imgInfoHash: selfData.avatar});
+        });
+
+        peer.infohash.addEventListener('message', CONNECTION_CALLBACK.onWorldMapInfoHash);
     }
-    
+
     engine.addEventListener('world-loaded', () => {
         const worldFile = engine.world.file
-        const file = worldFile instanceof ArrayBuffer ? new File([new Blob([worldFile], {type: 'application/zip'})], 'world.zip') : worldFile instanceof Blob ? new File([worldFile], 'world.zip') : worldFile;
+        const file = worldFile instanceof ArrayBuffer ? new File([new Blob([worldFile], { type: 'application/zip' })], 'world.zip') : worldFile instanceof Blob ? new File([worldFile], 'world.zip') : worldFile;
         if (!file) return;
         wtClient.seed(file, (torrent) => {
             engine.world.infoHash = torrent.infoHash;
