@@ -6,6 +6,21 @@ import * as CONNECTION_CALLBACK from '../connection/Callbacks';
 
 const world = engine.world;
 
+function applyPeerEventListeners(peer: Peer) {
+    peer.addEventListener('user-info', CONNECTION_CALLBACK.onReceiveUserInfo);
+    peer.addEventListener('req-offer', CONNECTION_CALLBACK.onReceiveReqOffer);
+    peer.addEventListener('req-answer', CONNECTION_CALLBACK.onReceiveReqAnswer);
+    peer.addEventListener('recv-answer', CONNECTION_CALLBACK.onReceiveRecvAnswer);
+
+    peer.addEventListener('onconnected', () => {
+        const selfData = world.self.data;
+        if (!selfData.userId) selfData.userId = Math.random().toString(36).substring(2, 6);
+        if (!selfData.name) selfData.name = selfData.userId;
+        peer.signalling.onopen = () => peer.sendSignalData({type: 'user-info', id: selfData.userId, name: selfData.name, imgInfoHash: selfData.avatar});
+    });
+    peer.infohash.addEventListener('message', CONNECTION_CALLBACK.onWorldMapInfoHash);
+}
+
 window.onload = () => {
     const logDiv = document.getElementById('log') as HTMLDivElement;
 
@@ -41,6 +56,75 @@ window.onload = () => {
         });
     }
 
+    const inputApiUrl = document.getElementById('input-api-url') as HTMLInputElement;
+    function getRequestHeaders() {
+        return {
+            "Content-Type": "application/json",
+        };
+    }
+    document.getElementById('btn-invitaion-create')!.onclick = async () => {
+        const peer = new Peer();
+        const invitationID = Math.random().toString(36).substring(2, 8);
+        const sessionDescription = await peer.createSessionDescription('offer');
+        log(`CREATED_INVITATION_CODE: (${invitationID})`);
+        
+        fetch(`${inputApiUrl.value.endsWith('/') ? inputApiUrl.value : `${inputApiUrl.value}/`}create-offer`, {
+            mode: 'cors',
+            headers: getRequestHeaders(),
+            method: "POST",
+            body: JSON.stringify({id: invitationID, sd: sessionDescription})
+        }).then(async (res) => {
+            console.log(res);
+            if (res.status !== 200) {
+                res.text().then(text => log(text));
+                return;
+            }
+            const sd = await res.json();
+            peer.setRemoteDescription(sd);
+            applyPeerEventListeners(peer);
+        });
+    }
+    const inputInvitation = document.getElementById('input-invitation') as HTMLInputElement;
+    document.getElementById('btn-invitaion-join')!.onclick = async () => {
+        fetch(`${inputApiUrl.value.endsWith('/') ? inputApiUrl.value : `${inputApiUrl.value}/`}get-offer?id=${inputInvitation.value}`, {
+            mode: 'cors',
+            headers: getRequestHeaders(),
+            method: 'GET'
+        })
+        .then(async (res) => {
+            console.log(res);
+            if (res.status !== 200) {
+                res.text().then(text => log(text));
+                return;
+            }
+            const offer = await res.json();
+            const peer = new Peer();
+            peer.setRemoteDescription(offer);
+            applyPeerEventListeners(peer);
+
+            const sessionDescription = await peer.createSessionDescription('answer');
+            fetch(`${inputApiUrl.value.endsWith('/') ? inputApiUrl.value : `${inputApiUrl.value}/`}create-answer`, {
+                mode: 'cors',
+                headers: getRequestHeaders(),
+                method: "POST",
+                body: JSON.stringify({id: inputInvitation.value, sd: sessionDescription})
+            }).then(async (res) => {
+                console.log(res);
+                res.text().then(text => log(text));
+            });
+        })
+    }
+    document.getElementById('btn-invitaion-inactive')!.onclick = () => {
+        fetch(`${inputApiUrl.value.endsWith('/') ? inputApiUrl.value : `${inputApiUrl.value}/`}delete-offer?id=${inputInvitation.value}`, {
+            mode: 'cors',
+            headers: getRequestHeaders(),
+            method: 'GET'
+        }).then(async (res) => {
+            console.log(res);
+            res.text().then(text => log(text));
+        })
+    }
+
     document.getElementById('btn-create-offer')!.onclick = () => {
         const peer = new Peer();
         CONNECTION_CALLBACK.newPeerQueue.push(peer);
@@ -52,47 +136,18 @@ window.onload = () => {
     document.getElementById('btn-answer-desc')!.onclick = () => {
         const peer = CONNECTION_CALLBACK.newPeerQueue.shift();
         if (!peer) return;
-
         peer.setRemoteDescription(JSON.parse(inputAnswerDesc.value));
-
-        peer.addEventListener('user-info', CONNECTION_CALLBACK.onReceiveUserInfo);
-        peer.addEventListener('req-offer', CONNECTION_CALLBACK.onReceiveReqOffer);
-        peer.addEventListener('req-answer', CONNECTION_CALLBACK.onReceiveReqAnswer);
-        peer.addEventListener('recv-answer', CONNECTION_CALLBACK.onReceiveRecvAnswer);
-
-        peer.addEventListener('onconnected', () => {
-            const selfData = world.self.data;
-            if (!selfData.userId) selfData.userId = Math.random().toString(36).substring(2, 6);
-            if (!selfData.name) selfData.name = selfData.userId;
-            peer.signalling.onopen = () => peer.sendSignalData({type: 'user-info', id: selfData.userId, name: selfData.name, imgInfoHash: selfData.avatar});
-        });
-
-        peer.infohash.addEventListener('message', CONNECTION_CALLBACK.onWorldMapInfoHash);
+        applyPeerEventListeners(peer);
     }
 
     const inputOfferDesc = document.getElementById('input-offer-desc') as HTMLInputElement;
     document.getElementById('btn-offer-desc')!.onclick = () => {
         const peer = new Peer();
-
         peer.setRemoteDescription(JSON.parse(inputOfferDesc.value));
-
         peer.createSessionDescription('answer').then(sessionDescription => {
             log("Created answer: " + JSON.stringify(sessionDescription));
         });
-
-        peer.addEventListener('user-info', CONNECTION_CALLBACK.onReceiveUserInfo);
-        peer.addEventListener('req-offer', CONNECTION_CALLBACK.onReceiveReqOffer);
-        peer.addEventListener('req-answer', CONNECTION_CALLBACK.onReceiveReqAnswer);
-        peer.addEventListener('recv-answer', CONNECTION_CALLBACK.onReceiveRecvAnswer);
-
-        peer.addEventListener('onconnected', () => {
-            const selfData = world.self.data;
-            if (!selfData.userId) selfData.userId = Math.random().toString(36).substring(2, 6);
-            if (!selfData.name) selfData.name = selfData.userId;
-            peer.signalling.onopen = () => peer.sendSignalData({type: 'user-info', id: selfData.userId, name: selfData.name, imgInfoHash: selfData.avatar});
-        });
-
-        peer.infohash.addEventListener('message', CONNECTION_CALLBACK.onWorldMapInfoHash);
+        applyPeerEventListeners(peer);
     }
 
     engine.addEventListener('world-loaded', () => {
