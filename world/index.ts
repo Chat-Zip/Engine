@@ -29,6 +29,9 @@ export default class World extends Scene {
     public users: Map<string, User>;
     public spawnPoint: Array<number | undefined>;
 
+    public file: ArrayBuffer | Blob | File | undefined;
+    public infoHash: string | undefined;
+
     constructor() {
         super();
         this.skybox = new Skybox(undefined);
@@ -42,6 +45,9 @@ export default class World extends Scene {
         this.add(this.light);
 
         this.editor = new Editor(this);
+
+        this.infoHash = undefined;
+        this.file = undefined;
     }
 
     public update(delta: number) {
@@ -112,6 +118,7 @@ export default class World extends Scene {
     }
 
     public load(file: ArrayBuffer | Blob | File) {
+        this.file = file;
         const f = new JSZip();
         const map = this.map;
         const loadChunks: Promise<void>[] = [];

@@ -76,7 +76,7 @@ export default class Self implements SelfInterface {
         };
         this.peers = new Map<string, Peer>();
         this.controls = undefined;
-        this.camera = new PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 256);
+        this.camera = new PerspectiveCamera(70, undefined, 0.1, 256);
         this.raycaster = new Raycaster();
         this.collider = new Collider(this, world.map);
         this.gravity = new Gravity(this.state);

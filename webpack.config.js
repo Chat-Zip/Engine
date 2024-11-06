@@ -2,8 +2,9 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 
-const config = {
+module.exports = {
     mode: 'development',
     module: {
         rules: [
@@ -48,17 +49,23 @@ const config = {
         extensions: [
             '.ts', '.js',
         ],
+        fallback: {
+            "./lib/conn-pool.js": false,
+            "./lib/utp.cjs": false,
+            "@silentbot1/nat-api": false,
+            "bittorrent-dht": false,
+            "crypto": false,
+            "fs": false,
+            "fs-chunk-store": "hybrid-chunk-store",
+            "http": false,
+            "load-ip-set": false,
+            "net": false,
+            "os": false,
+            "ut_pex": false,
+            "dgram": false,
+            "dns": false,
+        }
     },
-    devServer: {
-        static: {
-            directory: path.join(__dirname, "./template"),
-        },
-        compress: true,
-        port: process.env.PORT,
-    }
-}
-
-const testConfig = Object.assign({}, config, {
     entry: './template/index.ts',
     output: {
         filename: 'bundle.js',
@@ -72,7 +79,19 @@ const testConfig = Object.assign({}, config, {
             filename: 'index.html',
             minify: true,
         }),
-    ]
-});
-
-module.exports = testConfig;
+        new NodePolyfillPlugin({
+            // https://www.npmjs.com/package/node-polyfill-webpack-plugin
+            additionalAliases: ['process', 'punycode'],
+        }),
+        new webpack.DefinePlugin({
+            global: 'globalThis'
+        })
+    ],
+    devServer: {
+        static: {
+            directory: path.join(__dirname, "./template"),
+        },
+        compress: true,
+        port: process.env.PORT,
+    }
+}

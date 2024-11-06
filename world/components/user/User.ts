@@ -1,6 +1,8 @@
 import { Vector3, Camera } from "three";
+import { Torrent } from "webtorrent";
 import UserModel from "./model";
 import Peer from "../../../connection/Peer";
+import wtClient, { getMagnetLink } from "../../../connection/WTClient";
 
 export interface UserData {
     userId: string | undefined;
@@ -19,7 +21,7 @@ export default class User extends UserModel implements UserData {
     avatar: string;
     conn: Peer;
 
-    constructor(camera: Camera, id: string, name: string, avatar: string) {
+    constructor(camera: Camera, id: string, name: string, avatar: string, connection: Peer) {
         super(name, avatar);
         this.camera = camera;
         this.prevPos = new Vector3();
@@ -29,8 +31,30 @@ export default class User extends UserModel implements UserData {
         this.userId = id;
         this.name = name;
         this.avatar = avatar;
-        this.conn = new Peer();
+        this.conn = connection;
+
+        const scope = this;
+        async function applyAvatarFromTorrent(torrent: Torrent) {
+            const blob = await torrent.files[0].blob();
+            URL.revokeObjectURL(scope.avatar);
+            scope.avatar = URL.createObjectURL(blob);
+            scope.updateAppearance(scope.avatar);
+        }
+
         this.conn.movement.onmessage = e => this.updateMovement(e.data);
+        this.conn.infohash.addEventListener('message', e => {
+            const data = JSON.parse(e.data);
+            if (data.type !== 'user-img') return;
+            wtClient.get(data.infohash).then(async (t: Torrent) => {
+                if (t) {
+                    applyAvatarFromTorrent(t);
+                    return;
+                }
+                wtClient.add(getMagnetLink(data.infohash), async (torrent) => {
+                    applyAvatarFromTorrent(torrent);
+                });
+            });
+        });
     }
 
     private updateMovement(buffer: ArrayBuffer) {

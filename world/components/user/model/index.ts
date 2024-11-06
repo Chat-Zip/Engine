@@ -13,6 +13,12 @@ export default class UserModel extends Group {
         this.add(this.nameLabel);
         this.add(this.appearance);
     }
+    updateAppearance(newAvatarURL: string) {
+        this.remove(this.appearance);
+        this.appearance.dispose();
+        this.appearance = new UserAppearance(newAvatarURL);
+        this.add(this.appearance);
+    }
     dispose() {
         this.nameLabel.dispose();
         this.appearance.dispose();

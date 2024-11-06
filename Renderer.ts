@@ -9,6 +9,8 @@ export default class Renderer extends WebGLRenderer {
         super({canvas});
         this.outputColorSpace = LinearSRGBColorSpace;
         this.camera = engine.world.self.camera;
+        this.camera.aspect = canvas.width / canvas.height;
+        this.camera.updateProjectionMatrix();
     }
     
     public setSize(width: number, height: number, updateStyle?: boolean) {
