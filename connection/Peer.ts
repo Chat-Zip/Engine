@@ -1,11 +1,15 @@
 export type SignalData = {
     type: string,
-    evTarget?: Peer,
-    id?: string,
-    targetId?: string,
-    name?: string,
-    imgInfoHash?: string,
-    sessionDescription?: RTCSessionDescriptionInit
+    p?: Peer,
+    s?: string, // Sender ID
+    r?: string, // Receiver ID
+    n?: string, // User's name
+    img?: string, // Image infohash for webtorrent (user image)
+    sd?: RTCSessionDescriptionInit, // RTCSessionDescription object
+    go?: string, // Group offer ID
+    ga?: string, // Group answer ID
+    rgi?: boolean, // Request group info flag
+    trsm?: boolean, // Transmission flag
 }
 
 export default class Peer extends RTCPeerConnection {
@@ -58,34 +62,42 @@ export default class Peer extends RTCPeerConnection {
             switch (data.type) {
                 case 'user-info':
                     this.dispatchEvent(new CustomEvent<SignalData>('user-info', { detail: {
-                        evTarget: this,
+                        p: this,
                         type: 'user-info',
-                        id: data.id,
-                        name: data.name,
-                        imgInfoHash: data.imgInfoHash,
+                        s: data.s,
+                        n: data.n,
+                        img: data.img,
+                        rgi: data.rgi,
                     }}));
                     return;
                 case 'req-offer':
                     this.dispatchEvent(new CustomEvent<SignalData>('req-offer', { detail: {
-                        evTarget: this,
+                        p: this,
                         type: 'req-offer',
-                        targetId: data.targetId,
+                        s: data.s,
+                        go: data.go,
+                        ga: data.ga,
+                        trsm: data.trsm,
                     }}));
                     return;
                 case 'req-answer':
                     this.dispatchEvent(new CustomEvent<SignalData>('req-answer', { detail: {
-                        evTarget: this,
+                        p: this,
                         type: 'req-answer',
-                        id: data.id,
-                        targetId: data.targetId,
-                        sessionDescription: data.sessionDescription,
+                        s: data.s,
+                        r: data.r,
+                        go: data.go,
+                        ga: data.ga,
+                        sd: data.sd,
                     }}));
                     return;
                 case 'recv-answer':
                     this.dispatchEvent(new CustomEvent<SignalData>('recv-answer', { detail: {
                         type: 'recv-answer',
-                        targetId: data.targetId,
-                        sessionDescription: data.sessionDescription,
+                        r: data.r,
+                        go: data.go,
+                        ga: data.ga,
+                        sd: data.sd,
                     }}));
                     return;
             }

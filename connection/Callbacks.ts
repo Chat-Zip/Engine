@@ -6,6 +6,8 @@ import User from "../world/components/user/User";
 import PERSON_IMG from '../world/components/user/model/person.png';
 
 const world = engine.world;
+const peers = world.self.peers;
+const selfData = world.self.data;
 export const newPeerQueue: Peer[] = [];
 
 function onWorldLoaded() {
@@ -53,101 +55,181 @@ export async function onReceiveWorldMapInfoHash(e: MessageEvent<string>) {
     });
 }
 
+export function applyPeerEventListeners(peer: Peer, options?: { reqGroupInfo: boolean }) {
+    peer.addEventListener('user-info', onReceiveUserInfo);
+    peer.addEventListener('req-offer', onReceiveReqOffer);
+    peer.addEventListener('req-answer', onReceiveReqAnswer);
+    peer.addEventListener('recv-answer', onReceiveRecvAnswer);
+    peer.addEventListener('onconnected', () => {
+        const selfData = world.self.data;
+        if (!selfData.userId) selfData.userId = Math.random().toString(36).substring(2, 6);
+        if (!selfData.name) selfData.name = selfData.userId;
+        peer.signalling.onopen = () => peer.sendSignalData({
+            type: 'user-info',
+            s: selfData.userId,
+            n: selfData.name,
+            img: selfData.avatar,
+            rgi: options?.reqGroupInfo
+        });
+    });
+    peer.infohash.addEventListener('message', onWorldMapInfoHash);
+}
+
 export function onReceiveUserInfo(e: CustomEventInit<SignalData>) {
     const data = e.detail!;
-    const peer = e.detail!.evTarget!;
+    const peer = e.detail!.p!;
 
-    if (world.self.peers.has(data.id!)) return;
-    console.log(`==========CONNECTED USER ID (${data.id})==========`);
-    world.self.peers.forEach((p, userId) => {
-        if (data.id === userId) return;
-        p.sendSignalData({ type: 'req-offer', targetId: data.id });
-    });
+    if (peers.has(data.s!)) return;
+    
+    // console.log(`(1)==========CONNECTED USER ID (${data.sID})==========`);
+    // console.log(data);
 
-    const user = new User(world.self.camera, data.id!, data.name!, PERSON_IMG, peer);
+    const user = new User(world.self.camera, data.s!, data.n!, PERSON_IMG, peer);
+    peers.set(user.userId, peer);
     world.users.set(user.userId, user);
-    world.self.peers.set(user.userId, peer);
 
     const posBuffer = new ArrayBuffer(12);
     const posArr = new Float32Array(posBuffer);
     posArr.set(world.self.state.pos);
 
     peer.sendMovement(posArr);
-    if (world.self.data.avatar) peer.sendInfoHash({ type: 'user-img', infohash: world.self.data.avatar });
+    if (selfData.avatar) peer.sendInfoHash({ type: 'user-img', infohash: selfData.avatar });
     world.add(user);
 
     peer.addEventListener('ondisconnected', () => {
         world.users.delete(user.userId);
-        world.self.peers.delete(user.userId);
+        peers.delete(user.userId);
         user.conn.close();
         user.dispose();
         world.remove(user);
     });
+
+    if (peer.localDescription?.type === "answer" && data.rgi) {
+        peer.sendSignalData({
+            type: 'req-offer',
+            s: selfData.userId,
+            ga: selfData.userId,
+            trsm: true
+        });
+        // console.log(`(2)==========REQ OFFER FROM (${selfData.userId})==========`);
+        // console.log(data);
+        peers.forEach((p, userId) => {
+            if (userId === data.s) return;
+            peer.sendSignalData({
+                type: 'req-offer',
+                s: userId,
+                ga: selfData.userId,
+                trsm: true
+            });
+            // console.log(`(2)==========REQ OFFER FROM (${userId})==========`);
+            // console.log(data);
+        });
+    }
 }
 
 export function onReceiveReqOffer(e: CustomEventInit<SignalData>) {
     const data = e.detail!;
-    const peer = e.detail!.evTarget!;
+    const peer = e.detail!.p!;
 
-    if (world.self.peers.has(data.targetId!)) return;
-    const newPeerOffer = new Peer();
-    newPeerOffer.createSessionDescription('offer').then(offer => {
-        peer.sendSignalData({ type: 'req-answer', id: world.self.data.userId, targetId: data.targetId, sessionDescription: offer! });
+    // if (data.sID === selfData.userId) return;
+    if (!peers.has(data.s!)) {
+        const newPeerOffer = new Peer();
+        newPeerOffer.createSessionDescription('offer').then(offer => {
+            peer.sendSignalData({ 
+                type: 'req-answer',
+                s: selfData.userId,
+                r: data.s,
+                // If receive transmission(true) from gruopAnswerID => (selfData.userId) is (groupOfferID)
+                go: data.trsm ? selfData.userId : data.go,
+                ga: data.ga,
+                sd: offer!,
+            });
+            // console.log(`(3-1)==========CREATE OFFER FOR (${data.sID})==========`);
+            // console.log(data);
+        });
+        newPeerQueue.push(newPeerOffer);
+
+    }
+    if (!data.trsm) return;
+    peers.forEach((p, userId) => {
+        if (userId === data.ga) return;
+        p.sendSignalData({
+            type: 'req-offer',
+            s: data.s,
+            go: selfData.userId,
+            ga: data.ga,
+            trsm: false
+        });
+        // console.log(`(3-2)==========TRANSFER REQ OFFER FROM (${data.sID}) TO (${userId})==========`);
+        // console.log(data);
     });
-    newPeerQueue.push(newPeerOffer);
 }
 
 export function onReceiveReqAnswer(e: CustomEventInit<SignalData>) {
     const data = e.detail!;
-    const peer = e.detail!.evTarget!;
+    const peer = e.detail!.p!;
 
-    if (data.targetId === world.self.data.userId) {
+    if (selfData.userId === data.go) {
+        peers.get(data.ga!)?.sendSignalData(data);
+        // console.log(`(4)==========TRANSFER REQ ANSWER FROM (${data.sID}) TO (${data.rID})==========`);
+        // console.log(data);
+        return;
+    }
+
+    if (selfData.userId === data.r) {
         const newPeerAnswer = new Peer();
-        newPeerAnswer.setRemoteDescription(data.sessionDescription!);
-
-        newPeerAnswer.addEventListener('user-info', onReceiveUserInfo);
-        newPeerAnswer.addEventListener('req-offer', onReceiveReqOffer);
-        newPeerAnswer.addEventListener('req-answer', onReceiveReqAnswer);
-        newPeerAnswer.addEventListener('recv-answer', onReceiveRecvAnswer);
-        newPeerAnswer.addEventListener('onconnected', () => {
-            const selfData = world.self.data;
-            if (!selfData.userId) selfData.userId = Math.random().toString(36).substring(2, 6);
-            if (!selfData.name) selfData.name = selfData.userId;
-            newPeerAnswer.signalling.onopen = () => newPeerAnswer.sendSignalData({ type: 'user-info', id: selfData.userId, name: selfData.name, imgInfoHash: selfData.avatar });
-        });
-        newPeerAnswer.infohash.addEventListener('message', onWorldMapInfoHash);
+        newPeerAnswer.setRemoteDescription(data.sd!);
+        applyPeerEventListeners(newPeerAnswer);
 
         newPeerAnswer.createSessionDescription('answer').then(answer => {
-            peer.sendSignalData({type: 'recv-answer', targetId: data.id, sessionDescription: answer!})
+            peer.sendSignalData({
+                type: 'recv-answer',
+                r: data.s,
+                go: data.go,
+                ga: data.ga,
+                sd: answer!
+            });
+            // console.log(`(5-1)==========CREATE ANSWER FOR (${data.sID})==========`);
+            // console.log(data);
         });
     }
     else {
-        world.self.peers.get(data.targetId!)?.sendSignalData({ type: 'req-answer', id: data.id, targetId: data.targetId, sessionDescription: data.sessionDescription });
+        peers.get(data.r!)?.sendSignalData(data);
+        // console.log(`(5-2)==========TRANSFER ANSWER FROM (${data.sID}) TO (${data.rID})==========`);
+        // console.log(data);
     }
 }
 
 export function onReceiveRecvAnswer(e: CustomEventInit<SignalData>) {
     const data = e.detail!;
 
-    if (data.targetId === world.self.data.userId) {
+    if (selfData.userId === data.r) {
+        // console.log(`(6)==========RECV ANSWER & CONNECTION READY!==========`);
+        // console.log(data);
         const newPeerOffer = newPeerQueue.shift();
         if (!newPeerOffer) return;
 
-        newPeerOffer.addEventListener('user-info', onReceiveUserInfo);
-        newPeerOffer.addEventListener('req-offer', onReceiveReqOffer);
-        newPeerOffer.addEventListener('req-answer', onReceiveReqAnswer);
-        newPeerOffer.addEventListener('recv-answer', onReceiveRecvAnswer);
-        newPeerOffer.addEventListener('onconnected', () => {
-            const selfData = world.self.data;
-            if (!selfData.userId) selfData.userId = Math.random().toString(36).substring(2, 6);
-            if (!selfData.name) selfData.name = selfData.userId;
-            newPeerOffer.signalling.onopen = () => newPeerOffer.sendSignalData({ type: 'user-info', id: selfData.userId, name: selfData.name, imgInfoHash: selfData.avatar });
-        });
-        newPeerOffer.infohash.addEventListener('message', onWorldMapInfoHash);
-
-        newPeerOffer.setRemoteDescription(data.sessionDescription!);
+        applyPeerEventListeners(newPeerOffer);
+        newPeerOffer.setRemoteDescription(data.sd!);
     }
     else {
-        world.self.peers.get(data.targetId!)?.sendSignalData({ type: 'recv-answer', targetId: data.targetId, sessionDescription: data.sessionDescription });
+        if (selfData.userId === data.ga) {
+            peers.get(data.go!)?.sendSignalData(data);
+            // console.log(`(6)==========TRANSFER RECV ANSWER THROUGH groupOffer TO (${data.rID})==========`);
+            // console.log(data);
+            // console.log(`groupOffer ${data.groupOfferID} (${peers.has(data.groupOfferID!)}) ${peers.get(data.groupOfferID!)}`);
+        }
+        else {
+            if (peers.has(data.r!)) {
+                peers.get(data.r!)?.sendSignalData(data);
+                // console.log(`(6)==========TRANSFER RECV ANSWER TO (${data.rID})==========`);
+                // console.log(data);
+            }
+            else {
+                console.error('Can\'t find receiver');
+                // console.error(`(6)==========CANT FIND RECEIVER (${selfData.userId} ${data.rID}) (${selfData.userId === data.rID})==========`);
+                // console.log(data);
+            }
+        }
     }
 }
