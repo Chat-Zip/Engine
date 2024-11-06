@@ -11,8 +11,8 @@ const selfData = world.self.data;
 export const newPeerQueue: Peer[] = [];
 
 function onWorldLoaded() {
-    const spawnPoint = engine.world.spawnPoint;
-    const selfPos = engine.world.self.state.pos;
+    const spawnPoint = world.spawnPoint;
+    const selfPos = world.self.state.pos;
     selfPos[0] = spawnPoint[0] ? spawnPoint[0] : 0;
     selfPos[1] = spawnPoint[1] ? spawnPoint[1] : 0;
     selfPos[2] = spawnPoint[2] ? spawnPoint[2] : 0;
@@ -21,17 +21,17 @@ function onWorldLoaded() {
 export async function onWorldMapInfoHash(e: MessageEvent<string>) {
     const data = JSON.parse(e.data);
     if (data.type !== 'world') return;
-    if (engine.world.infoHash === data.infohash) return;
-    engine.world.infoHash = data.infohash;
+    if (world.infoHash === data.infohash) return;
+    world.infoHash = data.infohash;
     wtClient.get(data.infohash).then(async (t: Torrent) => {
         if (t) {
             const blob = await t.files[0].blob();
-            engine.world.load(blob).then(onWorldLoaded);
+            world.load(blob).then(onWorldLoaded);
             return;
         }
         wtClient.add(getMagnetLink(data.infohash), async (torrent) => {
             const blob = await torrent.files[0].blob();
-            engine.world.load(blob).then(onWorldLoaded);
+            world.load(blob).then(onWorldLoaded);
         });
     });
 }
@@ -40,17 +40,17 @@ export async function onReceiveWorldMapInfoHash(e: MessageEvent<string>) {
     const data = JSON.parse(e.data);
 
     if (data.type !== 'world') return;
-    if (engine.world.infoHash === data.infohash) return;
-    engine.world.infoHash = data.infohash;
+    if (world.infoHash === data.infohash) return;
+    world.infoHash = data.infohash;
     wtClient.get(data.infohash).then(async (t: Torrent) => {
         if (t) {
             const blob = await t.files[0].blob();
-            engine.world.load(blob).then(onWorldLoaded);
+            world.load(blob).then(onWorldLoaded);
             return;
         }
         wtClient.add(getMagnetLink(data.infohash), async (torrent) => {
             const blob = await torrent.files[0].blob();
-            engine.world.load(blob).then(onWorldLoaded);
+            world.load(blob).then(onWorldLoaded);
         });
     });
 }
@@ -71,6 +71,10 @@ export function applyPeerEventListeners(peer: Peer, options?: { reqGroupInfo: bo
             img: selfData.avatar,
             rgi: options?.reqGroupInfo
         });
+        peer.infohash.onopen = () => {
+            if (peer.localDescription?.type !== "offer" || !world.infoHash) return;
+            peer.sendInfoHash({ type: 'world', infohash: world.infoHash });
+        }
     });
     peer.infohash.addEventListener('message', onWorldMapInfoHash);
 }
