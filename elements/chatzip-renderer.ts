@@ -12,6 +12,8 @@ class RendererElement extends HTMLElement {
     private palette: PaletteElement;
     private menu: MenuElement;
 
+    private enter: HTMLButtonElement;
+
     private styleElem: HTMLStyleElement;
 
     constructor() {
@@ -30,6 +32,15 @@ class RendererElement extends HTMLElement {
         this.crosshair = new CrosshairElement();
         this.palette = new PaletteElement();
         this.menu = new MenuElement();
+
+        this.enter = document.createElement('button') as HTMLButtonElement;
+        this.enter.textContent = 'ENTER';
+        this.enter.onclick = () => {
+            this.enter.classList.add('hide');
+            this.wrapper.classList.remove('hide');
+            engine.setFullScreen(true);
+        }
+        this.enter.classList.add('hide');
 
         this.styleElem = document.createElement('style') as HTMLStyleElement;
         this.styleElem.textContent = `
@@ -50,7 +61,7 @@ class RendererElement extends HTMLElement {
         `;
 
         this.wrapper.append(fontLink, this.canvas, this.crosshair, this.palette, this.menu);
-        this.append(this.wrapper, this.styleElem);
+        this.append(this.wrapper, this.enter, this.styleElem);
     }
 
     connectedCallback() {
@@ -70,10 +81,22 @@ class RendererElement extends HTMLElement {
         engine.enableEditor(this.hasAttribute('enable-editor'));
 
         new ResizeObserver(entries => {
-            const {width, height} = entries[0].contentRect;
+            const { width, height } = entries[0].contentRect;
             engine.renderer?.setSize(width, height);
-            engine.dispatchEvent({type: 'resize-render-frame', contentRect: entries[0].contentRect});
+            engine.dispatchEvent({ type: 'resize-render-frame', contentRect: entries[0].contentRect });
         }).observe(this.wrapper);
+
+        engine.addEventListener('fullscreen-mode', (e) => {
+            if (this.getAttribute('controls') === 'pointer') return;
+            if (document.fullscreenElement === this.wrapper) {
+                this.enter.classList.add('hide');
+                this.wrapper.classList.remove('hide');
+            }
+            else {
+                this.enter.classList.remove('hide');
+                this.wrapper.classList.add('hide');
+            }
+        })
 
         engine.start();
     }
@@ -96,6 +119,20 @@ class RendererElement extends HTMLElement {
                     case 'touch':
                         engine.setControls('touch');
                         keyEventListeners.ui.delete('KeyH');
+
+                        this.crosshair.classList.add('hide');
+                        this.palette.classList.add('hide');
+                        this.menu.classList.remove('hide');
+                        // this.menu.removeAttribute('enable-editor');
+
+                        if (document.fullscreenElement === this.wrapper) {
+                            this.enter.classList.add('hide');
+                            this.wrapper.classList.remove('hide');
+                        }
+                        else {
+                            this.enter.classList.remove('hide');
+                            this.wrapper.classList.add('hide');
+                        }
                         break;
                 }
                 break;
