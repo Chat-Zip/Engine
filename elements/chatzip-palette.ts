@@ -124,10 +124,12 @@ export class PaletteElement extends HTMLElement {
         this.brushVoxel.setAttribute('id', 'brush-v');
         this.brushVoxel.setAttribute('class', 'brush-items');
         this.brushVoxel.textContent = 'VOXEL(V)';
+        this.brushVoxel.onclick = () => this.selectBrush('voxel');
         this.brushBlock = document.createElement('span') as HTMLSpanElement;
         this.brushBlock.setAttribute('id', 'brush-b');
         this.brushBlock.setAttribute('class', 'brush-items');
         this.brushBlock.textContent = 'BLOCK(B)';
+        this.brushBlock.onclick = () => this.selectBrush('block');
 
         // color board
         this.colorBoard = document.createElement('div') as HTMLDivElement;
