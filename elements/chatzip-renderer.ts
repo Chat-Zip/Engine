@@ -27,6 +27,7 @@ class RendererElement extends HTMLElement {
 
         this.wrapper = document.createElement('div') as HTMLDivElement;
         this.wrapper.setAttribute('id', 'render-frame');
+        this.wrapper.setAttribute('class', 'prevent-select');
 
         this.canvas = document.createElement('canvas') as HTMLCanvasElement;
         this.canvas.setAttribute('id', 'canvas');
@@ -60,6 +61,11 @@ class RendererElement extends HTMLElement {
         }
         .hide {
             display: none;
+        }
+        .prevent-select {
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
         }
         `;
 
