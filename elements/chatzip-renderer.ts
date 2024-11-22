@@ -4,6 +4,7 @@ import keyEventListeners from '../controls/KeyEventListeners';
 import { CrosshairElement } from '../elements/chatzip-crosshair';
 import { PaletteElement } from '../elements/chatzip-palette';
 import { MenuElement } from '../elements/chatzip-menu';
+import { ControlsElement } from './chatzip-controls';
 
 class RendererElement extends HTMLElement {
     private wrapper: HTMLDivElement;
@@ -11,6 +12,7 @@ class RendererElement extends HTMLElement {
     private crosshair: CrosshairElement;
     private palette: PaletteElement;
     private menu: MenuElement;
+    private controls: ControlsElement;
 
     private enter: HTMLButtonElement;
 
@@ -32,6 +34,7 @@ class RendererElement extends HTMLElement {
         this.crosshair = new CrosshairElement();
         this.palette = new PaletteElement();
         this.menu = new MenuElement();
+        this.controls = new ControlsElement();
 
         this.enter = document.createElement('button') as HTMLButtonElement;
         this.enter.textContent = 'ENTER';
@@ -60,7 +63,7 @@ class RendererElement extends HTMLElement {
         }
         `;
 
-        this.wrapper.append(fontLink, this.canvas, this.crosshair, this.palette, this.menu);
+        this.wrapper.append(fontLink, this.canvas, this.crosshair, this.palette, this.menu, this.controls);
         this.append(this.wrapper, this.enter, this.styleElem);
     }
 
@@ -109,6 +112,7 @@ class RendererElement extends HTMLElement {
                 switch (newValue) {
                     case 'pointer':
                         engine.setControls('pointer');
+                        this.controls.classList.add('hide');
                         if (keyEventListeners.ui.has('KeyH')) return;
                         keyEventListeners.ui.set('KeyH', () => {
                             this.crosshair.classList.toggle('hide');
@@ -118,10 +122,11 @@ class RendererElement extends HTMLElement {
                         break;
                     case 'touch':
                         engine.setControls('touch');
+                        this.controls.classList.remove('hide');
                         keyEventListeners.ui.delete('KeyH');
 
-                        this.crosshair.classList.add('hide');
-                        this.palette.classList.add('hide');
+                        // this.crosshair.classList.add('hide');
+                        // this.palette.classList.add('hide');
                         this.menu.classList.remove('hide');
                         // this.menu.removeAttribute('enable-editor');
 
@@ -140,10 +145,12 @@ class RendererElement extends HTMLElement {
                 if (this.hasAttribute(name)) {
                     this.palette.setAttribute('enable-editor', '');
                     this.menu.setAttribute('enable-editor', '');
+                    this.controls.setAttribute('enable-editor', '');
                 }
                 else {
                     this.palette.removeAttribute('enable-editor');
                     this.menu.removeAttribute('enable-editor');
+                    this.controls.removeAttribute('enable-editor');
                 }
                 break;
         }
