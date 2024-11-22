@@ -35,7 +35,7 @@ export class Engine extends EventDispatcher {
         this.renderFrameElement = renderFrameElement;
         this.renderFrameElement.addEventListener('fullscreenchange', () => {
             this.fullScreenMode = document.fullscreenElement === this.renderFrameElement ? true : false;
-            this.dispatchEvent({type: 'fullscreen-mode', active: this.fullScreenMode});
+            this.dispatchEvent({ type: 'fullscreen-mode', active: this.fullScreenMode });
         });
         // new ResizeObserver(entries => {
         //     const {width, height} = entries[0].contentRect;
@@ -87,34 +87,41 @@ export class Engine extends EventDispatcher {
                 this.world.self.controls = touchControls;
                 break;
         }
-        
+
     }
 
     public enableEditor(enable: boolean) {
         const { world, controls, renderer } = this;
-        if (!(controls instanceof PointerControls)) {
-            console.error('Only PointerControls can use editor mode.');
-            return;
-        }
+        // if (!(controls instanceof PointerControls)) {
+        //     console.error('Only PointerControls can use editor mode.');
+        //     return;
+        // }
 
         const editor = world.editor;
-        const movements = controls.movements;
+        const movements = controls!.movements;
         const movKey = eventKeyListeners.move;
 
-        this.dispatchEvent({type: 'change-editor-mode', enable: enable});
-        
+        this.dispatchEvent({ type: 'change-editor-mode', enable: enable });
+
         if (enable) {
             if (editor.abortController.signal.aborted) editor.initAbortController();
 
-            controls.addEventListener('lock', () => {
-                renderer?.domElement.addEventListener('pointerdown', editor.placeVoxel);
-                controls?.addEventListener('change', editor.selectVoxel);
-            }, {signal: editor.abortController.signal});
+            if (controls instanceof PointerControls) {
+                controls.addEventListener('lock', () => {
+                    renderer?.domElement.addEventListener('pointerdown', editor.placeVoxel);
+                    controls?.addEventListener('change', editor.selectVoxel);
+                }, { signal: editor.abortController.signal });
 
-            controls.addEventListener('unlock', () => {
-                renderer?.domElement.removeEventListener('pointerdown', editor.placeVoxel);
-                controls?.removeEventListener('change', editor.selectVoxel);
-            }, {signal: editor.abortController.signal});
+                controls.addEventListener('unlock', () => {
+                    renderer?.domElement.removeEventListener('pointerdown', editor.placeVoxel);
+                    controls?.removeEventListener('change', editor.selectVoxel);
+                }, { signal: editor.abortController.signal });
+            }
+            else {
+                controls?.addEventListener('starttouch', editor.selectVoxel, { signal: editor.abortController.signal });
+                controls?.addEventListener('movetouch', editor.selectVoxel, { signal: editor.abortController.signal });
+                controls?.addEventListener('touch', editor.placeVoxel, { signal: editor.abortController.signal });
+            }
 
             world.self.gravity.isActive = false;
             world.map.applyGridHelper(true);
@@ -138,7 +145,7 @@ export class Engine extends EventDispatcher {
             console.error('You must call setRednerer() before use this function.');
             return;
         }
-        if (isFullScreen) this.renderFrameElement.requestFullscreen({navigationUI: "hide"});
+        if (isFullScreen) this.renderFrameElement.requestFullscreen({ navigationUI: "hide" });
         else document.exitFullscreen();
     }
 
