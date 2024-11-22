@@ -68,7 +68,7 @@ export class MenuElement extends HTMLElement {
             -ms-overflow-style: none;  /* IE and Edge */
             scrollbar-width: none;  /* Firefox */
             border-radius: 16px;
-            z-index: 1;
+            z-index: 4;
         }
         #open {
             gap-y: 8px;

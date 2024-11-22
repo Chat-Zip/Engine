@@ -203,7 +203,7 @@ export class PaletteElement extends HTMLElement {
             position: absolute;
             left: 1rem;
             top: 1rem;
-            z-index: 1;
+            z-index: 3;
         }
         .palette-list {
             border: none;
