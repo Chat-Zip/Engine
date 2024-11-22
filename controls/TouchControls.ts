@@ -1,9 +1,13 @@
 import Self from "../world/components/user/Self";
 import Controls from "./Controls";
 
-const _prevPos: number[] = [undefined, undefined];
+const _prevPos: number[] = [0, 0];
 
 export default class TouchControls extends Controls {
+
+    public connect: () => void;
+    public disconnect: () => void;
+
     constructor(self: Self, canvas: HTMLCanvasElement) {
         super(self, canvas);
 
@@ -24,8 +28,17 @@ export default class TouchControls extends Controls {
             _prevPos[1] = touches.pageY;
         }
 
-        const ownerDocument = this.domElement.ownerDocument;
-        ownerDocument.addEventListener('touchstart', onTouchStart);
-        ownerDocument.addEventListener('touchmove', onTouchMove);
+        this.connect = () => {
+            canvas.addEventListener('touchstart', onTouchStart);
+            canvas.addEventListener('touchmove', onTouchMove);
+        }
+
+        this.disconnect = () => {
+            canvas.removeEventListener('touchstart', onTouchStart);
+            canvas.removeEventListener('touchmove', onTouchMove);
+        }
+
+        this.disconnect();
+        this.connect();
     }
 }
