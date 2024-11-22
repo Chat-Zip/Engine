@@ -118,7 +118,11 @@ class RendererElement extends HTMLElement {
                 switch (newValue) {
                     case 'pointer':
                         engine.setControls('pointer');
+
+                        this.enter.classList.add('hide');
+                        this.wrapper.classList.remove('hide');
                         this.controls.classList.add('hide');
+                        
                         if (keyEventListeners.ui.has('KeyH')) return;
                         keyEventListeners.ui.set('KeyH', () => {
                             this.crosshair.classList.toggle('hide');
@@ -129,12 +133,9 @@ class RendererElement extends HTMLElement {
                     case 'touch':
                         engine.setControls('touch');
                         this.controls.classList.remove('hide');
-                        keyEventListeners.ui.delete('KeyH');
-
-                        // this.crosshair.classList.add('hide');
-                        // this.palette.classList.add('hide');
                         this.menu.classList.remove('hide');
-                        // this.menu.removeAttribute('enable-editor');
+
+                        keyEventListeners.ui.delete('KeyH');
 
                         if (document.fullscreenElement === this.wrapper) {
                             this.enter.classList.add('hide');
