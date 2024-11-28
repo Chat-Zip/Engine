@@ -15,7 +15,7 @@ export default class TouchControls extends Controls {
         const scope = this;
 
         function onTouchStart(e: TouchEvent) {
-            const touches = e.touches[0];
+            const touches = e.targetTouches[0];
             _startTime = e.timeStamp;
             _prevPos[0] = touches.pageX;
             _prevPos[1] = touches.pageY;
@@ -23,7 +23,7 @@ export default class TouchControls extends Controls {
         }
 
         function onTouchMove(e: TouchEvent) {
-            const touches = e.touches[0];
+            const touches = e.targetTouches[0];
             const movementX = touches.pageX - _prevPos[0];
             const movementY = touches.pageY - _prevPos[1];
             scope.moveCamera(movementX, movementY);
@@ -33,7 +33,7 @@ export default class TouchControls extends Controls {
         }
 
         function onTouchEnd(e: TouchEvent) {
-            const touches = e.changedTouches[0];
+            const touches = e.targetTouches[0];
             scope.dispathControlEvent('endtouch', { detail: touches });
             if ((e.timeStamp - _startTime) > 100) return;
             scope.dispathControlEvent('touch');
