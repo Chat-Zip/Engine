@@ -145,8 +145,14 @@ export class Engine extends EventDispatcher {
             console.error('You must call setRednerer() before use this function.');
             return;
         }
-        if (isFullScreen) this.renderFrameElement.requestFullscreen({ navigationUI: "hide" });
-        else document.exitFullscreen();
+        if (isFullScreen) {
+            this.renderFrameElement.requestFullscreen({ navigationUI: "hide" });
+            screen.orientation.lock("landscape");
+        }
+        else {
+            document.exitFullscreen();
+            screen.orientation.unlock();
+        }
     }
 
     public start() {
