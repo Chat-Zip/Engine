@@ -108,6 +108,17 @@ export class ControlsElement extends HTMLElement {
         shadowRoot.append(dir, action, styleElem);
     }
 
+    connectedCallback() {
+        requestAnimationFrame(() => this.mounted());
+    }
+
+    private mounted() {
+        engine.addEventListener('change-editor-mode', (e) => {
+            if (e.enable) this.setAttribute('enable-editor', '');
+            else this.removeAttribute('enable-editor');
+        });
+    }
+
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
         switch (name) {
             case 'enable-editor':
