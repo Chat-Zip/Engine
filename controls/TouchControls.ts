@@ -24,8 +24,8 @@ export default class TouchControls extends Controls {
 
         function onTouchMove(e: TouchEvent) {
             const touches = e.touches[0];
-            const movementX = _prevPos[0] - touches.pageX;
-            const movementY = _prevPos[1] - touches.pageY;
+            const movementX = touches.pageX - _prevPos[0];
+            const movementY = touches.pageY - _prevPos[1];
             scope.moveCamera(movementX, movementY);
             _prevPos[0] = touches.pageX;
             _prevPos[1] = touches.pageY;
@@ -40,15 +40,15 @@ export default class TouchControls extends Controls {
         }
 
         this.connect = () => {
-            canvas.addEventListener('touchstart', onTouchStart);
-            canvas.addEventListener('touchmove', onTouchMove);
-            canvas.addEventListener('touchend', onTouchEnd);
+            canvas.ontouchstart = onTouchStart;
+            canvas.ontouchmove = onTouchMove;
+            canvas.ontouchend = onTouchEnd;
         }
 
         this.disconnect = () => {
-            canvas.removeEventListener('touchstart', onTouchStart);
-            canvas.removeEventListener('touchmove', onTouchMove);
-            canvas.removeEventListener('touchend', onTouchEnd);
+            canvas.ontouchstart = null;
+            canvas.ontouchmove = null;
+            canvas.ontouchend = null;
         }
 
         this.disconnect();
